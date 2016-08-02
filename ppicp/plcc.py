@@ -122,7 +122,7 @@ def pdb_models_to_chains(pdb_path, out_dir):
                                            initialize.BIN_DIR + '/plcc.jar',
                                            pdb_path[:4],
                                            '--convert-models-to-chains',
-                                           pdb_path, out_dir + '.split'])
+                                           out_dir + '.pdb'])
             return True
         except (WindowsError, subprocess.CalledProcessError) as e:
             print('[Error {}]: {}\nSplitting calculations failed.'.format(e.returncode, e.output))
@@ -133,7 +133,7 @@ def pdb_models_to_chains(pdb_path, out_dir):
                                            initialize.BIN_DIR + '/plcc.jar',
                                            pdb_path[:4],
                                            '--convert-models-to-chains',
-                                           pdb_path, out_dir + '.split'])
+                                           out_dir + '.pdb'])
             return True
         except (OSError, subprocess.CalledProcessError) as e:
             print('[Error {}]: {}\nSplitting calculations failed.'.format(e.returncode, e.output))
