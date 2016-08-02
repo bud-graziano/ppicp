@@ -100,7 +100,7 @@ def pdb_to_dssp(pdb_id, rest_url, out_dir):
             result = json.loads(req.text)['result']
 
             # Save the result as a text file with file extension .dssp
-            with open(out_dir + '/' + pdb_id.rstrip('.pdb') + '.' + 'dssp', 'w') as res:
+            with open(out_dir + '/' + pdb_id[:4] + '.' + 'dssp', 'w') as res:
                 res.write(result)
             # Return the result to the caller, which prints it to the screen.
             return ready

@@ -48,7 +48,7 @@ def calculate_ppi(pdb_path):
         try:
             print subprocess.check_output([java_exec, '-jar',
                                            initialize.BIN_DIR + '/plcc.jar',
-                                           pdb_path.rstrip('.pdb'), '--alt-aa-contacts'])
+                                           pdb_path[:4], '--alt-aa-contacts'])
             return True
         except WindowsError, (errno, strerror):
             print('WindowsError [Error {}]: {}\nPPI calculations failed.'.format(errno, strerror))
@@ -57,7 +57,7 @@ def calculate_ppi(pdb_path):
         try:
             print subprocess.check_output([java_exec, '-jar',
                                            initialize.BIN_DIR + '/plcc.jar',
-                                           pdb_path.rstrip('.pdb'), '--alt-aa-contacts'])
+                                           pdb_path[:4], '--alt-aa-contacts'])
             return True
         except OSError, (errno, strerror):
             print('OSError [Error {}]: {}\nPPI calculations failed.'.format(errno, strerror))
@@ -83,7 +83,7 @@ def calculate_ppi_no_ligands(pdb_path):
         try:
             print subprocess.check_output([java_exec, '-jar',
                                            initialize.BIN_DIR + '/plcc.jar',
-                                           pdb_path.rstrip('.pdb'), '--alt-aa-contacts-no-ligands'])
+                                           pdb_path[:4], '--alt-aa-contacts-ligands'])
             return True
         except WindowsError, (errno, strerror):
             print('WindowsError [Error {}]: {}\nPPI calculations failed.'.format(errno, strerror))
@@ -92,7 +92,7 @@ def calculate_ppi_no_ligands(pdb_path):
         try:
             print subprocess.check_output([java_exec, '-jar',
                                            initialize.BIN_DIR + '/plcc.jar',
-                                           pdb_path.rstrip('.pdb'), '--alt-aa-contacts-no-ligands'])
+                                           pdb_path[:4], '--alt-aa-contacts-ligands'])
             return True
         except OSError, (errno, strerror):
             print('OSError [Error {}]: {}\nPPI calculations failed.'.format(errno, strerror))
@@ -120,24 +120,23 @@ def pdb_models_to_chains(pdb_path, out_dir):
         try:
             print subprocess.check_output([java_exec, '-jar',
                                            initialize.BIN_DIR + '/plcc.jar',
-                                           pdb_path.rstrip('.pdb'),
+                                           pdb_path[:4],
                                            '--convert-models-to-chains',
                                            pdb_path, out_dir + '.split'])
             return True
-        except WindowsError, (errno, strerror):
-            print('WindowsError [Error {}]: {}\nSplitting calculations failed.'.format(errno,
-                                                                                       strerror))
+        except (WindowsError, subprocess.CalledProcessError) as e:
+            print('[Error {}]: {}\nSplitting calculations failed.'.format(e.returncode, e.output))
             return False
     elif platform.system() == 'Linux':
         try:
             print subprocess.check_output([java_exec, '-jar',
                                            initialize.BIN_DIR + '/plcc.jar',
-                                           pdb_path.rstrip('.pdb'),
+                                           pdb_path[:4],
                                            '--convert-models-to-chains',
                                            pdb_path, out_dir + '.split'])
             return True
-        except OSError, (errno, strerror):
-            print('OSError [Error {}]: {}\nSplitting calculations failed.'.format(errno, strerror))
+        except (OSError, subprocess.CalledProcessError) as e:
+            print('[Error {}]: {}\nSplitting calculations failed.'.format(e.returncode, e.output))
             return False
     else:
         print("[ERROR] OS could not be determined.")
