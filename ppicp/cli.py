@@ -43,8 +43,8 @@ def create_parser():
 
     cli_parser.add_argument('output', type=lambda x: initialize.check_output_path(x), nargs=1,
                             help="Path to an output directory.")
-    cli_parser.add_argument('--ppi', '-p', choices=['all', 'no-ligands', 'no-pi-effects',
-                                                    'no-ligands-no-pi-effects'])
+    cli_parser.add_argument('--ppi', '-p', choices=['all', 'with-ligands', 'no-pi-effects',
+                                                    'ligands-no-pi-effects'])
     cli_parser.add_argument('--pdb', '-pdb', action='store_true')
     cli_parser.add_argument('--dssp', '-d', action='store_true')
     cli_parser.add_argument('--hydrogen', '-r', action='store_true')
@@ -150,16 +150,23 @@ def main():
         for pdb_id in input_files:
             if initialize.is_pdb_file(os.path.join(in_dir, pdb_id)):
                 pdb_ids.append(pdb_id)
-
         os.chdir(in_dir)
         for index in pdb_ids:
             plcc.calculate_ppi(index)
         os.chdir(cwd)
-    elif args.ppi == 'no-ligands':
-        pass
+    elif args.ppi == 'with-ligands':
+        input_files = [f for f in os.listdir(in_dir)]
+        pdb_ids = []
+        for pdb_id in input_files:
+            if initialize.is_pdb_file(os.path.join(in_dir, pdb_id)):
+                pdb_ids.append(pdb_id)
+        os.chdir(in_dir)
+        for index in pdb_ids:
+            plcc.calculate_ppi_incl_ligands(index)
+        os.chdir(cwd)
     elif args.ppi == 'no-pi-effects':
         raise NotImplementedError
-    elif args.ppi == 'no-ligands-no-pi-effects':
+    elif args.ppi == 'ligands-no-pi-effects':
         raise NotImplementedError
 
     if args.motifs:
