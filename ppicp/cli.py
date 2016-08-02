@@ -17,6 +17,7 @@ documentation.
 
 import argparse
 import os
+import shutil
 
 import config
 import dssp
@@ -68,7 +69,6 @@ def parse_args(parser):
 def main():
     """
     Run the CLI.
-    :return:
     """
     # Create the standard config file and remember where it is stored.
     initialize.conf()
@@ -88,8 +88,50 @@ def main():
     # If no arguments are given, run the complete pipeline.
     if not (args.pdb or args.models2chains or args.hydrogen or args.dssp or args.motifs or
             args.statistics or args.planarity or args.ppi is not None):
-        print('Run whole pipeline.')
-        raise NotImplementedError
+
+        # First get the input files (.pdbids). This can be multiple files.
+        input_files = [f for f in os.listdir(in_dir)]
+        pdb_ids = []
+        # Get the PDB IDs from all .pdbids files.
+        for pdb_list_file in input_files:
+            if initialize.is_valid_input_file(os.path.join(in_dir, pdb_list_file)):
+                pdb_ids += (utilities.get_pdb_ids_from_file(os.path.join(in_dir, pdb_list_file)))
+
+        # Download the PDB files into the pdb subdirectory.
+        os.chdir(out_subdirs['pdb'])
+        pdb.pdb_download(pdb_ids, config.get_num_pdb_dl_threads(conf_path))
+
+        # Copy the files into the mod_pdb directory. Later, for the PPI calculation, we need all
+        # files in the mod_pdb subdir.
+        # Since we have to change all PDB files (adding hydrogen atoms), we copy all PDB files over
+        # into the mod_pdb subdir and change them inplace there.
+        for files in os.listdir(out_subdirs['pdb']):
+            shutil.copy(files, out_subdirs['mod_pdb'])
+
+        # Convert models to chains and calculate hydrogen atoms. PDB files will be changed inplace.
+        os.chdir(out_subdirs['mod_pdb'])
+        for index in pdb_ids:
+            plcc.pdb_models_to_chains(index, os.path.join(out_subdirs['mod_pdb'], index))
+            hydrogen.calc_hydrogen(index, os.path.join(out_subdirs['mod_pdb'], index))
+
+        # Get the list of all modified PDB files.
+        pdb_files = []
+        for pdb_file in os.listdir(out_subdirs['mod_pdb']):
+            if initialize.is_pdb_file(os.path.join(out_subdirs['mod_pdb'], pdb_file)):
+                pdb_files.append(pdb_file)
+
+        # Download DSSP files into the dssp subdir.
+        dssp.dssp_download(pdb_files, out_subdirs['dssp'],
+                           config.get_num_dssp_dl_threads(conf_path))
+
+        # Copy the DSSP files into the mod_pdb subdir. Again, we need those files for the PPI
+        # calculations.
+        for files in os.listdir(out_subdirs['dssp']):
+            shutil.copy(os.path.join(out_subdirs['dssp'], files), out_subdirs['mod_pdb'])
+
+        # Calculate PPIs for all PDB files in the mod_pdb subdir.
+        for index in pdb_ids:
+            plcc.calculate_ppi(index)
 
     # If arguments are given, run those instead.
 
