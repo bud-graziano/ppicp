@@ -35,18 +35,18 @@ def calc_hydrogen(pdb_path, out_dir):
                                                             'reduce_wwPDB_het_dict.txt'), '-Quiet',
                                                out_dir + '.stripped_h' + ' > ' + out_dir])
                 return True
-            except OSError, (errno, strerror):
-                print('OSError [Error {}]: {}\nHydrogen calculations failed.'.format(errno,
-                                                                                     strerror))
+            except (OSError, subprocess.CalledProcessError) as e:
+                print('[Error {}]: {}\nHydrogen calculations failed.'.format(e.returncode,
+                                                                             e.output))
                 return False
         else:
             hydrogen_app = config.get_hydrogen_app(initialize.CONF_FILE)
             try:
                 print subprocess.check_output([hydrogen_app])
                 return True
-            except OSError, (errno, strerror):
-                print('OSError [Error {}]: {}\nHydrogen calculations failed.'.format(errno,
-                                                                                     strerror))
+            except (OSError, subprocess.CalledProcessError) as e:
+                print('OSError [Error {}]: {}\nHydrogen calculations failed.'.format(e.returncode,
+                                                                                     e.output))
                 return False
     else:
         print("[ERROR] OS could not be determined.")

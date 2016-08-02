@@ -34,7 +34,7 @@ class PtglWorker(multiprocessing.Process):
 
 def calculate_ppi(pdb_path):
     """
-    Calculates the protein-protein interaction by executing the plcc.jar code with the necessary
+    Calculates the protein-protein interactions by executing the plcc.jar code with the necessary
     flags.
     :param pdb_path: PDB ID.
     :return: True if the calculation was successful, False otherwise.
@@ -50,8 +50,8 @@ def calculate_ppi(pdb_path):
                                            initialize.BIN_DIR + '/plcc.jar',
                                            pdb_path[:4], '--alt-aa-contacts'])
             return True
-        except WindowsError, (errno, strerror):
-            print('WindowsError [Error {}]: {}\nPPI calculations failed.'.format(errno, strerror))
+        except (WindowsError, subprocess.CalledProcessError) as e:
+            print('[Error {}]: {}\nPPI calculations failed.'.format(e.returncode, e.output))
             return False
     elif platform.system() == 'Linux':
         try:
@@ -59,18 +59,18 @@ def calculate_ppi(pdb_path):
                                            initialize.BIN_DIR + '/plcc.jar',
                                            pdb_path[:4], '--alt-aa-contacts'])
             return True
-        except OSError, (errno, strerror):
-            print('OSError [Error {}]: {}\nPPI calculations failed.'.format(errno, strerror))
+        except (OSError, subprocess.CalledProcessError) as e:
+            print('[Error {}]: {}\nPPI calculations failed.'.format(e.returncode, e.output))
             return False
     else:
         print("[ERROR] OS could not be determined.")
         sys.exit(1)
 
 
-def calculate_ppi_no_ligands(pdb_path):
+def calculate_ppi_incl_ligands(pdb_path):
     """
-    Calculates the protein-protein interaction by executing the plcc.jar code with the necessary
-    flags.
+    Calculates the protein-protein interactions including ligands by executing the plcc.jar code
+    with the necessary flags.
     :param pdb_path: PDB ID.
     :return: True if the calculation was successful, False otherwise.
     """
@@ -85,8 +85,8 @@ def calculate_ppi_no_ligands(pdb_path):
                                            initialize.BIN_DIR + '/plcc.jar',
                                            pdb_path[:4], '--alt-aa-contacts-ligands'])
             return True
-        except WindowsError, (errno, strerror):
-            print('WindowsError [Error {}]: {}\nPPI calculations failed.'.format(errno, strerror))
+        except (WindowsError, subprocess.CalledProcessError) as e:
+            print('[Error {}]: {}\nPPI calculations failed.'.format(e.returncode, e.output))
             return False
     elif platform.system() == 'Linux':
         try:
@@ -94,8 +94,8 @@ def calculate_ppi_no_ligands(pdb_path):
                                            initialize.BIN_DIR + '/plcc.jar',
                                            pdb_path[:4], '--alt-aa-contacts-ligands'])
             return True
-        except OSError, (errno, strerror):
-            print('OSError [Error {}]: {}\nPPI calculations failed.'.format(errno, strerror))
+        except (OSError, subprocess.CalledProcessError) as e:
+            print('[Error {}]: {}\nPPI calculations failed.'.format(e.returncode, e.output))
             return False
     else:
         print("[ERROR] OS could not be determined.")
