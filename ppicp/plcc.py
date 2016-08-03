@@ -50,8 +50,8 @@ def calculate_ppi(pdb_path):
                                            initialize.BIN_DIR + '/plcc.jar',
                                            pdb_path[:4], '--alt-aa-contacts'])
             return True
-        except (WindowsError, subprocess.CalledProcessError) as e:
-            print('[Error {}]: {}\nPPI calculations failed.'.format(e.returncode, e.output))
+        except (WindowsError, subprocess.CalledProcessError) as err:
+            print('{}\nPPI calculations failed.'.format(err))
             return False
     elif platform.system() == 'Linux':
         try:
@@ -59,8 +59,8 @@ def calculate_ppi(pdb_path):
                                            initialize.BIN_DIR + '/plcc.jar',
                                            pdb_path[:4], '--alt-aa-contacts'])
             return True
-        except (OSError, subprocess.CalledProcessError) as e:
-            print('[Error {}]: {}\nPPI calculations failed.'.format(e.returncode, e.output))
+        except (OSError, subprocess.CalledProcessError) as err:
+            print('{}\nPPI calculations failed.'.format(err))
             return False
     else:
         print("[ERROR] OS could not be determined.")
@@ -85,8 +85,8 @@ def calculate_ppi_incl_ligands(pdb_path):
                                            initialize.BIN_DIR + '/plcc.jar',
                                            pdb_path[:4], '--alt-aa-contacts-ligands'])
             return True
-        except (WindowsError, subprocess.CalledProcessError) as e:
-            print('[Error {}]: {}\nPPI calculations failed.'.format(e.returncode, e.output))
+        except (WindowsError, subprocess.CalledProcessError) as err:
+            print('{}\nPPI calculations failed.'.format(err))
             return False
     elif platform.system() == 'Linux':
         try:
@@ -94,8 +94,8 @@ def calculate_ppi_incl_ligands(pdb_path):
                                            initialize.BIN_DIR + '/plcc.jar',
                                            pdb_path[:4], '--alt-aa-contacts-ligands'])
             return True
-        except (OSError, subprocess.CalledProcessError) as e:
-            print('[Error {}]: {}\nPPI calculations failed.'.format(e.returncode, e.output))
+        except (OSError, subprocess.CalledProcessError) as err:
+            print('{}\nPPI calculations failed.'.format(err))
             return False
     else:
         print("[ERROR] OS could not be determined.")
@@ -124,8 +124,8 @@ def pdb_models_to_chains(pdb_path, out_dir):
                                            '--convert-models-to-chains',
                                            out_dir + '.pdb'])
             return True
-        except (WindowsError, subprocess.CalledProcessError) as e:
-            print('[Error {}]: {}\nSplitting calculations failed.'.format(e.returncode, e.output))
+        except (WindowsError, subprocess.CalledProcessError) as err:
+            print('{}\nSplitting calculations failed.'.format(err))
             return False
     elif platform.system() == 'Linux':
         try:
@@ -135,8 +135,8 @@ def pdb_models_to_chains(pdb_path, out_dir):
                                            '--convert-models-to-chains',
                                            out_dir + '.pdb'])
             return True
-        except (OSError, subprocess.CalledProcessError) as e:
-            print('[Error {}]: {}\nSplitting calculations failed.'.format(e.returncode, e.output))
+        except (OSError, subprocess.CalledProcessError) as err:
+            print('{}\nSplitting calculations failed.'.format(err))
             return False
     else:
         print("[ERROR] OS could not be determined.")

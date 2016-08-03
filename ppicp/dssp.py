@@ -104,8 +104,8 @@ def pdb_to_dssp(pdb_id, rest_url, out_dir):
                 res.write(result)
             # Return the result to the caller, which prints it to the screen.
             return ready
-    except OSError, (errno, strerror):
-        print('OSError [ERROR {}]: {}\nMissing PDB file for {}'.format(errno, strerror, pdb_id))
+    except OSError as err:
+        print('{}\nMissing PDB file for {}'.format(err, pdb_id))
 
 
 def dssp_download(pdb_ids, out_dir, num_threads):

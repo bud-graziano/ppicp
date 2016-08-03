@@ -9,7 +9,8 @@ import os
 import platform
 import subprocess
 import string
-from ctypes import windll
+if platform.version() == 'Windows':
+    from ctypes import windll
 
 
 def get_pdb_ids_from_file(path_to_file):

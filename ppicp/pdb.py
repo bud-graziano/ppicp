@@ -69,9 +69,8 @@ def retrieve_pdb_bio_assembly_file(pdb_id, url):
         zip_file.close()
         os.remove(archive)
         return True
-    except (IOError, urllib.ContentTooShortError) as (errno, strerror):
-        print('Unable to download file {}.'.format(pdb_id))
-        print('IOError [ERROR {}]: {}'.format(errno, strerror))
+    except (IOError, urllib.ContentTooShortError) as err:
+        print('{}\nUnable to download file {}.'.format(err, pdb_id))
         return False
 
 
