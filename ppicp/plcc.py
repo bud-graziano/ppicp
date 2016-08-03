@@ -9,6 +9,7 @@ from __future__ import division
 
 import multiprocessing
 import multiprocessing.pool
+import os
 import platform
 import subprocess
 import sys
@@ -122,18 +123,18 @@ def pdb_models_to_chains(pdb_path, out_dir):
                                            initialize.BIN_DIR + '/plcc.jar',
                                            pdb_path[:4],
                                            '--convert-models-to-chains',
-                                           out_dir + '.pdb'])
+                                           out_dir])
             return True
         except (WindowsError, subprocess.CalledProcessError) as err:
             print('{}\nSplitting calculations failed.'.format(err))
             return False
     elif platform.system() == 'Linux':
         try:
-            print subprocess.check_output([java_exec, '-jar',
-                                           initialize.BIN_DIR + '/plcc.jar',
+            print subprocess.check_output([java_exec.rstrip('\n'), '-jar',
+                                           os.path.join(initialize.BIN_DIR, 'plcc.jar'),
                                            pdb_path[:4],
                                            '--convert-models-to-chains',
-                                           out_dir + '.pdb'])
+                                           out_dir])
             return True
         except (OSError, subprocess.CalledProcessError) as err:
             print('{}\nSplitting calculations failed.'.format(err))

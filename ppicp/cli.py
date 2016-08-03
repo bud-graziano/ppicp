@@ -157,7 +157,7 @@ def main():
 
         os.chdir(in_dir)
         for index in pdb_ids:
-            plcc.pdb_models_to_chains(index, out_subdirs['mod_pdb'] + index)
+            plcc.pdb_models_to_chains(index, os.path.join(out_subdirs['mod_pdb'], index))
         os.chdir(cwd)
 
     # Add hydrogen atoms to the PDB file.
