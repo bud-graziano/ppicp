@@ -9,7 +9,7 @@ import os
 import platform
 import subprocess
 import string
-if platform.version() == 'Windows':
+if platform.system() == 'Windows':
     from ctypes import windll
 
 
