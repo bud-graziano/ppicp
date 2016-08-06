@@ -8,6 +8,7 @@ which can be used for statistics reports.
 import re
 import csv
 
+
 def count_edges_in_ppi_aa_graph(path):
     """
     Takes the path to a file that stores edges for one protein complex (.fanmod file) and counts the
@@ -130,25 +131,3 @@ def count_atom_num_contacts(csv_file):
                     all_atom_contacts[key] += 1
 
     return all_atom_contacts
-
-
-def count_pis(pdb_file):
-    """
-    Takes the path to a PDB file and counts how many aromatic pi-ring systems are present.
-    :param pdb_file: Path to a PDB file.
-    :return: the number of pi-ring systems.
-    """
-    aas = []
-
-    # Go through all SEQRES entries and save all amino acid names.
-    with open(pdb_file, 'r') as f:
-        for line in f:
-            if line.startswith('SEQRES'):
-                aas.extend(line[19:71].split(" "))
-
-    trp = aas.count("TRP")
-    tyr = aas.count("TYR")
-    phe = aas.count("PHE")
-
-    return 2 * trp + tyr + phe  # 2 times Tryptophane since it has a aromatic 5 and 6 ring
-    # print('TRP: {} | TYR: {} | PHE: {} | TOTAL: {}'.format(trp, tyr, phe, trp + tyr + phe))
