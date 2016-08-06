@@ -6,7 +6,7 @@ which can be used for statistics reports.
 """
 
 import re
-
+import csv
 
 def count_edges_in_ppi_aa_graph(path):
     """
@@ -78,9 +78,10 @@ def count_all_contacts(stats_file):
         text = f.readlines()
 
     for line in text:
-        c_type = line.split(": ")[0]
-        c_num = int(line.split(": ")[1].rstrip('\n'))
-        all_contact_types[c_type] += c_num
+        if ':' in line:     # to make sure this a valid line and no empty line at file end.
+            c_type = line.split(": ")[0]
+            c_num = int(line.split(": ")[1].rstrip('\n'))
+            all_contact_types[c_type] += c_num
 
     return all_contact_types
 
@@ -92,42 +93,41 @@ def count_atom_num_contacts(csv_file):
     :param csv_file: Path to the *atom_atom_contacts.csv file.
     :return: a dictionary with all atoms and the amount of contacts they part of.
     """
-    pdb_id = csv_file[:4]
-    with open(csv_file, 'r') as f:
-        text = f.readlines()
-
+    pdb_id = csv_file[len(csv_file)-27:len(csv_file)-23]
     all_atom_contacts = {}
+    with open(csv_file, 'rb') as csvfile:
+        text = csv.reader(csvfile, delimiter=';')
 
-    for line in text:
-        # Find chain_id and atom_id for residue A.
-        chain_id = re.compile(r'\b({0}.?)\b'.format('Chain='),
-                              flags=re.IGNORECASE).search(line).group().split(r'=')[1]
-        atom_id = re.compile(r'\b({0}.*?\d)\b'.format('Atom'),
-                             flags=re.IGNORECASE).search(line).group().split(r'#')[1]
+        for line in text:
+            # Find chain_id and atom_id for residue A.
+            chain_id = re.compile(r'\b({0}.?)\b'.format('Chain='),
+                                  flags=re.IGNORECASE).search(line[1]).group().split(r'=')[1]
+            atom_id = re.compile(r'\b({0}.*?\d)\b'.format('Atom'),
+                                 flags=re.IGNORECASE).search(line[1]).group().split(r'#')[1]
 
-        # An atom id equal to 0 usually denotes H atoms added by the Reduce software which we want
-        # to exclude here atm.
-        if not atom_id == '0':
-            key = (pdb_id, chain_id, atom_id)
-            if key not in all_atom_contacts:
-                all_atom_contacts[key] = 1
-            else:
-                all_atom_contacts[key] += 1
+            # An atom id equal to 0 usually denotes H atoms added by the Reduce software which we
+            # want to exclude here atm.
+            if not atom_id == '0':
+                key = (pdb_id, chain_id, atom_id)
+                if key not in all_atom_contacts:
+                    all_atom_contacts[key] = 1
+                else:
+                    all_atom_contacts[key] += 1
 
-        # Find chain_id and atom_id for residue B.
-        chain_id = re.compile(r'\b({0}.?)\b'.format('Chain='), flags=re.IGNORECASE).search(
-            line.split(r'./')[1]).group().split(r'=')[1]
-        atom_id = re.compile(r'\b({0}.*?\d)\b'.format('Atom'), flags=re.IGNORECASE).search(
-            line.split(r'./')[1]).group().split(r'#')[1]
+            # Find chain_id and atom_id for residue B.
+            chain_id = re.compile(r'\b({0}.?)\b'.format('Chain='), flags=re.IGNORECASE).search(
+                line[2]).group().split(r'=')[1]
+            atom_id = re.compile(r'\b({0}.*?\d)\b'.format('Atom'), flags=re.IGNORECASE).search(
+                line[2]).group().split(r'#')[1]
 
-        # An atom id equal to 0 usually denotes H atoms added by the Reduce software which we want
-        # to exclude here atm.
-        if not atom_id == '0':
-            key = (pdb_id, chain_id, atom_id)
-            if not all_atom_contacts.has_key(key):
-                all_atom_contacts[key] = 1
-            else:
-                all_atom_contacts[key] += 1
+            # An atom id equal to 0 usually denotes H atoms added by the Reduce software which we
+            # want to exclude here atm.
+            if not atom_id == '0':
+                key = (pdb_id, chain_id, atom_id)
+                if not all_atom_contacts.has_key(key):
+                    all_atom_contacts[key] = 1
+                else:
+                    all_atom_contacts[key] += 1
 
     return all_atom_contacts
 
