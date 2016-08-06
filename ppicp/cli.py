@@ -16,15 +16,17 @@ documentation.
 """
 
 import argparse
+import collections
 import os
 import shutil
 
 import config
 import dssp
+import hydrogen
 import initialize
 import pdb
 import plcc
-import hydrogen
+import statistics
 import utilities
 
 
@@ -214,7 +216,25 @@ def main():
     if args.motifs:
         raise NotImplementedError
     if args.statistics:
-        pass
+        input_files = [f for f in os.listdir(in_dir)]
+        edges_ppi = 0
+        vertices_ppi = 0
+        all_contacts = collections.Counter()
+        all_aas = 0
+        atom_contacts = {}
+        for ppi_files in input_files:
+            if ppi_files.endswith('.fanmod'):
+                edges_ppi += statistics.count_edges_in_ppi_aa_graph(os.path.join(in_dir, ppi_files))
+                vertices_ppi += statistics.count_vertices_in_ppi_aa_graph(os.path.join(in_dir
+                                                                                       , ppi_files))
+            elif ppi_files.endswith('.stats'):
+                all_contacts += collections.Counter(statistics.count_all_contacts(
+                    os.path.join(in_dir, ppi_files)))
+            elif ppi_files.endswith('.csv'):
+                atom_contacts.update(statistics.count_atom_num_contacts(os.path.join(in_dir,
+                                                                                     ppi_files)))
+            elif ppi_files.endswith('aagraph.gml'):
+                all_aas += statistics.count_aas_in_aa_graph(os.path.join(in_dir, ppi_files))
     if args.planarity:
         raise NotImplementedError
 
