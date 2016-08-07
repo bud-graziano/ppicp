@@ -35,9 +35,12 @@ def bar_chart_types_of_contacts(all_contacts_dict, out_dir):
 
     total_vdw = all_contacts_dict['IVDW']
 
+    total_disulphide = all_contacts_dict['ISS']
+
     bar_chart.add('Hydrogen Bonds', total_hb)
     bar_chart.add('Van der Waals Interactions', total_vdw)
-    bar_chart.add('pi-Effects', total_pi)
+    bar_chart.add(u'\u03C0-Effects', total_pi)
+    bar_chart.add('Disulphide Bridges', total_disulphide)
     bar_chart.add('Ligands', total_lig)
     bar_chart.render_to_file(os.path.join(out_dir, 'all_contacts.svg'))
 
