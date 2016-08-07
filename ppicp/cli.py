@@ -120,8 +120,8 @@ def main():
         # Convert models to chains and calculate hydrogen atoms. PDB files will be changed inplace.
         os.chdir(out_subdirs['mod_pdb'])
         for index in pdb_ids:
-            plcc.pdb_models_to_chains(index, os.path.join(out_subdirs['mod_pdb'], index))
-            hydrogen.calc_hydrogen(index, os.path.join(out_subdirs['mod_pdb'], index))
+            plcc.pdb_models_to_chains(index, os.path.join(out_subdirs['mod_pdb'], index + '.pdb'))
+            hydrogen.calc_hydrogen(index, os.path.join(out_subdirs['mod_pdb'], index + '.pdb'))
 
         # Get the list of all modified PDB files.
         pdb_files = []
@@ -142,6 +142,65 @@ def main():
         for index in pdb_ids:
             plcc.calculate_ppi(index)
 
+        # Calculate statistics based on the PPI results.
+        num_pdb_files = 0
+        edges_ppi = 0
+        vertices_ppi = 0
+        all_contacts = collections.Counter()
+        all_aas = 0
+        atom_contacts = {}
+        for files in os.listdir(out_subdirs['mod_pdb']):
+            if files.endswith('.fanmod'):
+                edges_ppi += statistics.count_edges_in_ppi_aa_graph(
+                    os.path.join(out_subdirs['mod_pdb'], files))
+                vertices_ppi += statistics.count_vertices_in_ppi_aa_graph(
+                    os.path.join(out_subdirs['mod_pdb'], files))
+            elif files.endswith('.stats'):
+                all_contacts += collections.Counter(statistics.count_all_contacts(
+                    os.path.join(out_subdirs['mod_pdb'], files)))
+            elif files.endswith('.csv'):
+                atom_contacts.update(statistics.count_atom_num_contacts(
+                    os.path.join(out_subdirs['mod_pdb'], files)))
+            elif files.endswith('aagraph.gml'):
+                all_aas += statistics.count_aas_in_aa_graph(os.path.join(out_subdirs['mod_pdb'],
+                                                                         files))
+            elif files.endswith('.pdb'):
+                num_pdb_files += 1
+
+        output_results.bar_chart_types_of_contacts(all_contacts, out_subdirs['imgs'])
+        output_results.bar_chart_hydrogen(all_contacts, out_subdirs['imgs'])
+        output_results.bar_chart_hydrogen_verbose(all_contacts, out_subdirs['imgs'])
+        output_results.bar_chart_vdw(all_contacts, out_subdirs['imgs'])
+        output_results.bar_chart_ligands(all_contacts, out_subdirs['imgs'])
+        output_results.bar_chart_pi_effects(all_contacts, out_subdirs['imgs'])
+        output_results.bar_chart_pi_effects_verbose(all_contacts, out_subdirs['imgs'])
+
+        end_time = time.time()
+        runtime = (end_time - start_time) / 60
+        all_atom_atom_contacts = statistics.amount_atom_contacts(all_contacts)
+        avg_num_edges_in_graph = edges_ppi / num_pdb_files
+        avg_num_edges_on_atom_level = all_atom_atom_contacts / num_pdb_files
+        aas_contributing = vertices_ppi
+        avg_num_aas_per_graph = all_aas / num_pdb_files
+        avg_num_aas_contributing_per_graph = aas_contributing / num_pdb_files
+        avg_atom_atom_per_edge = avg_num_edges_on_atom_level / avg_num_edges_in_graph
+        num_contacts_per_atom = sorted(atom_contacts.items(), key=lambda x: x[1], reverse=True)
+
+        output_results.html_wrapper(out_subdirs['statistic'],
+                                    time.asctime(time.localtime(end_time)),
+                                    num_pdb_files,
+                                    runtime,
+                                    avg_num_edges_in_graph,
+                                    avg_num_edges_on_atom_level,
+                                    aas_contributing,
+                                    avg_num_aas_per_graph,
+                                    avg_num_aas_contributing_per_graph,
+                                    avg_atom_atom_per_edge,
+                                    all_aas,
+                                    all_atom_atom_contacts,
+                                    edges_ppi,
+                                    num_contacts_per_atom)
+
     # If arguments are given, run those instead.
 
     # Download PDB files.
@@ -151,7 +210,7 @@ def main():
         for pdb_list_file in input_files:
             if initialize.is_valid_input_file(os.path.join(in_dir, pdb_list_file)):
                 pdb_ids += (utilities.get_pdb_ids_from_file(os.path.join(in_dir, pdb_list_file)))
-        print(pdb_ids)
+
         os.chdir(out_subdirs['pdb'])
         pdb.pdb_download(pdb_ids, config.get_num_pdb_dl_threads(conf_path))
         os.chdir(cwd)
@@ -233,8 +292,8 @@ def main():
         for ppi_files in input_files:
             if ppi_files.endswith('.fanmod'):
                 edges_ppi += statistics.count_edges_in_ppi_aa_graph(os.path.join(in_dir, ppi_files))
-                vertices_ppi += statistics.count_vertices_in_ppi_aa_graph(os.path.join(in_dir
-                                                                                       , ppi_files))
+                vertices_ppi += statistics.count_vertices_in_ppi_aa_graph(os.path.join(in_dir,
+                                                                                       ppi_files))
             elif ppi_files.endswith('.stats'):
                 all_contacts += collections.Counter(statistics.count_all_contacts(
                     os.path.join(in_dir, ppi_files)))
