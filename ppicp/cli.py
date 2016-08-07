@@ -178,12 +178,25 @@ def main():
         end_time = time.time()
         runtime = (end_time - start_time) / 60
         all_atom_atom_contacts = statistics.amount_atom_contacts(all_contacts)
-        avg_num_edges_in_graph = edges_ppi / num_pdb_files
-        avg_num_edges_on_atom_level = all_atom_atom_contacts / num_pdb_files
         aas_contributing = vertices_ppi
-        avg_num_aas_per_graph = all_aas / num_pdb_files
-        avg_num_aas_contributing_per_graph = aas_contributing / num_pdb_files
-        avg_atom_atom_per_edge = avg_num_edges_on_atom_level / avg_num_edges_in_graph
+        try:
+            avg_num_edges_in_graph = edges_ppi / num_pdb_files
+            avg_num_edges_on_atom_level = all_atom_atom_contacts / num_pdb_files
+            avg_num_aas_per_graph = all_aas / num_pdb_files
+            avg_num_aas_contributing_per_graph = aas_contributing / num_pdb_files
+            avg_atom_atom_per_edge = avg_num_edges_on_atom_level / avg_num_edges_in_graph
+        except ZeroDivisionError as err:
+            print('{}\nEither the number of PDB files was zero or the average number of edges in a '
+                  'PPI AA graph was zero.'.format(err))
+            if avg_num_edges_in_graph == 0:
+                avg_atom_atom_per_edge = -1
+            else:
+                avg_num_edges_in_graph = -1
+                avg_num_edges_on_atom_level = -1
+                avg_num_aas_per_graph = -1
+                avg_num_aas_contributing_per_graph = -1
+                avg_atom_atom_per_edge = -1
+
         num_contacts_per_atom = sorted(atom_contacts.items(), key=lambda x: x[1], reverse=True)
 
         output_results.html_wrapper(out_subdirs['statistic'],
