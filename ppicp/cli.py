@@ -15,15 +15,19 @@ For more information about the third party software and the pipeline itself plea
 documentation.
 """
 
+from __future__ import division
+
 import argparse
 import collections
 import os
 import shutil
+import time
 
 import config
 import dssp
 import hydrogen
 import initialize
+import output_results
 import pdb
 import plcc
 import statistics
@@ -72,6 +76,9 @@ def main():
     """
     Run the CLI.
     """
+
+    start_time = time.time()
+
     # Create the standard config file and remember where it is stored.
     initialize.conf()
     conf_path = initialize.CONF_FILE
@@ -217,6 +224,7 @@ def main():
         raise NotImplementedError
     if args.statistics:
         input_files = [f for f in os.listdir(in_dir)]
+        num_pdb_files = 0
         edges_ppi = 0
         vertices_ppi = 0
         all_contacts = collections.Counter()
@@ -235,8 +243,45 @@ def main():
                                                                                      ppi_files)))
             elif ppi_files.endswith('aagraph.gml'):
                 all_aas += statistics.count_aas_in_aa_graph(os.path.join(in_dir, ppi_files))
+            elif ppi_files.endswith('.pdb'):
+                num_pdb_files += 1
+
+        output_results.bar_chart_types_of_contacts(all_contacts, out_subdirs['imgs'])
+        output_results.bar_chart_hydrogen(all_contacts, out_subdirs['imgs'])
+        output_results.bar_chart_hydrogen_verbose(all_contacts, out_subdirs['imgs'])
+        output_results.bar_chart_vdw(all_contacts, out_subdirs['imgs'])
+        output_results.bar_chart_ligands(all_contacts, out_subdirs['imgs'])
+        output_results.bar_chart_pi_effects(all_contacts, out_subdirs['imgs'])
+        output_results.bar_chart_pi_effects_verbose(all_contacts, out_subdirs['imgs'])
+
+        end_time = time.time()
+        runtime = (end_time - start_time) / 60
+        all_atom_atom_contacts = statistics.amount_atom_contacts(all_contacts)
+        avg_num_edges_in_graph = edges_ppi / num_pdb_files
+        avg_num_edges_on_atom_level = all_atom_atom_contacts / num_pdb_files
+        aas_contributing = vertices_ppi
+        avg_num_aas_per_graph = all_aas / num_pdb_files
+        avg_num_aas_contributing_per_graph = aas_contributing / num_pdb_files
+        avg_atom_atom_per_edge = avg_num_edges_on_atom_level / avg_num_edges_in_graph
+        num_contacts_per_atom = sorted(atom_contacts.items(), key=lambda x: x[1], reverse=True)
+
+        output_results.html_wrapper(out_subdirs['statistic'],
+                                    time.asctime(time.localtime(end_time)),
+                                    num_pdb_files,
+                                    runtime,
+                                    avg_num_edges_in_graph,
+                                    avg_num_edges_on_atom_level,
+                                    aas_contributing,
+                                    avg_num_aas_per_graph,
+                                    avg_num_aas_contributing_per_graph,
+                                    avg_atom_atom_per_edge,
+                                    all_aas,
+                                    all_atom_atom_contacts,
+                                    edges_ppi,
+                                    num_contacts_per_atom)
     if args.planarity:
         raise NotImplementedError
+
 
 if __name__ == '__main__':
     main()
