@@ -33,9 +33,9 @@ def count_vertices_in_ppi_aa_graph(path):
 
     vertices = re.split('\n| ', simple_file)
     vertices_id = []
-    for v in vertices:
-        if not v == '':
-            vertices_id.append(int(v))
+    for vtx in vertices:
+        if not vtx == '':
+            vertices_id.append(int(vtx))
     try:
         return max(vertices_id) + 1  # +1 because .fanmod starts counting its ids at 0
     except ValueError as err:
@@ -54,9 +54,9 @@ def count_aas_in_aa_graph(aagraph_path):
         aagraph = f.readlines()
 
     vertices_ids = []
-    for v in aagraph:
-        if v.startswith("    id"):  # indention is important -> gets all the vertex ids
-            vertices_ids.append(int(v.split("id ")[1].strip()))
+    for vtx in aagraph:
+        if vtx.startswith("    id"):  # indention is important -> gets all the vertex ids
+            vertices_ids.append(int(vtx.split("id ")[1].strip()))
     return max(vertices_ids)
 
 
@@ -125,9 +125,30 @@ def count_atom_num_contacts(csv_file):
             # want to exclude here atm.
             if not atom_id == '0':
                 key = (pdb_id, chain_id, atom_id)
-                if not all_atom_contacts.has_key(key):
+                if key not in all_atom_contacts:
                     all_atom_contacts[key] = 1
                 else:
                     all_atom_contacts[key] += 1
 
     return all_atom_contacts
+
+
+def amount_atom_contacts(all_contacts_dict):
+    """
+    Calculate how many contacts on atom-atom level occurred in total.
+    :param all_contacts_dict: Dictionary containing all contact types.
+    :return: total amount of contact types on atom-atom level.
+    """
+    total = all_contacts_dict['BBHB'] + all_contacts_dict['BBBH'] + all_contacts_dict['IVDW'] \
+            + all_contacts_dict['ISS'] + all_contacts_dict['BCHB'] + all_contacts_dict['BCBH'] \
+            + all_contacts_dict['CBHB'] + all_contacts_dict['CBBH'] + all_contacts_dict['CCHB'] \
+            + all_contacts_dict['CCBH'] + all_contacts_dict['BL'] + all_contacts_dict['LB'] \
+            + all_contacts_dict['CL'] + all_contacts_dict['LC'] + all_contacts_dict['LL'] \
+            + all_contacts_dict['NHPI'] + all_contacts_dict['PINH'] + all_contacts_dict['CAHPI'] \
+            + all_contacts_dict['PICAH'] + all_contacts_dict['CNHPI'] + all_contacts_dict['PICNH'] \
+            + all_contacts_dict['SHPI'] + all_contacts_dict['PISH'] + all_contacts_dict['XOHPI'] \
+            + all_contacts_dict['PIXOH'] + all_contacts_dict['PROCDHPI'] \
+            + all_contacts_dict['PIPROCDH'] + all_contacts_dict['CCACOH'] \
+            + all_contacts_dict['CCOCAH'] + all_contacts_dict['BCACOH'] \
+            + all_contacts_dict['BCOCAH']
+    return total
