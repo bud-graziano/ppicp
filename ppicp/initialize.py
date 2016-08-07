@@ -45,8 +45,12 @@ def init_output_dir(out_dir):
     check_output_path(statistic_files)
     check_output_path(planarity_files)
 
+    img_files = os.path.join(statistic_files, 'imgs')
+    check_output_path(img_files)
+
     return {'pdb': pdb_files, 'mod_pdb': modified_pdb_files, 'dssp': dssp_files, 'ppi': ppi_files,
-            'motif': motif_files, 'statistic': statistic_files, 'planarity': planarity_files}
+            'motif': motif_files, 'statistic': statistic_files, 'planarity': planarity_files,
+            'imgs': img_files}
 
 
 def is_pdb_file(path):
