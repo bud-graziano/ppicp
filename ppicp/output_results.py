@@ -178,7 +178,10 @@ def html_wrapper(out_dir,
                  aas_per_graph,
                  aas_contributing_per_graph,
                  atom_per_edge,
-                 all_aas):
+                 all_aas,
+                 all_atom_atom_contacts,
+                 all_resdiue_residue_contacts,
+                 num_contacts_per_atom):
     """
     Generate and save a html file which shows all statistics after the PPI calculations are
     finished. This includes general information about the runtime, etc., as well as various graphs
@@ -195,6 +198,9 @@ def html_wrapper(out_dir,
     to PPIs.
     :param atom_per_edge: Avg. number of contacts on atom-atom level per edge in a PPI AA graph.
     :param all_aas: Number of all amino acids.
+    :param all_atom_atom_contacts: Number of all contacts on atom level.
+    :param all_resdiue_residue_contacts: Number of all contacts on residue level.
+    :param num_contacts_per_atom: List of atoms and the number of contacts they are part of.
     """
     html_framework = r"""<!DOCTYPE html>
 <html>
@@ -265,6 +271,8 @@ def html_wrapper(out_dir,
         </div>
 
         <h2>Contact Statistics</h2>
+        {} contacts on atom level.<br>
+        {} contacts on residue level.
             <div class="centering">
                 <figure>
                     <embed type="image/svg+xml" src="./imgs/all_contacts.svg" width=100%/>
@@ -322,19 +330,34 @@ def html_wrapper(out_dir,
 
         <div>
         <h2>Additional Info</h2>
-            &#216; num of edges in PPI graph: {}<br>
-            &#216; num of edges on atom-atom level: {}<br>
-            num of AAs contributing to PPIs: {}<br>
-            &#216; num of AAs per graph: {}<br>
-            &#216; num of AAs contributing per graph: {}<br>
-            &#216; num of atom-atom contacts per edge in PPI graph: {}<br>
-            num all AAs: {}<br>
+            <p>&#216; number contacts on residue level (of edges in PPI graph): {}<br>
+            &#216; number of contacts on atom-atom level: {}</p>
+
+            <p>Number of all amino acids: {}<br>
+            Number of amino acids contributing to PPIs: {}<br>
+            &#216; number of amino acids per graph: {}<br>
+            &#216; number of amino acids contributing to PPIs per graph: {}
             types of AAs:<br>
-            types of AAs that are part of a contact:
+            types of AAs that are part of a contact:</p>
+
+            <p>&#216; number of atom-atom contacts per edge in PPI graph: {}<br></p>
+
+            <p>Top 5 atoms with most contacts:<br>
+            Shown as: (PDB ID, Chain ID, Atom ID), &#35; contacts
+            <ol>
+                <li>{}</li>
+                <li>{}</li>
+                <li>{}</li>
+                <li>{}</li>
+                <li>{}</li>
+            </ol></p>
         </div>
     </body>
-</html>""".format(date_time, processed_files, runtime, edges_ppi, edges_atom, aas_contributing,
-                  aas_per_graph, aas_contributing_per_graph, atom_per_edge, all_aas)
+</html>""".format(date_time, processed_files, runtime, all_atom_atom_contacts,
+                  all_resdiue_residue_contacts, edges_ppi, edges_atom, all_aas, aas_contributing,
+                  aas_per_graph, aas_contributing_per_graph, atom_per_edge,
+                  num_contacts_per_atom[0], num_contacts_per_atom[1], num_contacts_per_atom[2],
+                  num_contacts_per_atom[3], num_contacts_per_atom[4])
 
     with open(os.path.join(out_dir, 'results.html'), 'w') as f:
         f.write(html_framework)
