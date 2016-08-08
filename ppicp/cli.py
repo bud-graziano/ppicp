@@ -203,20 +203,19 @@ def main():
         output_results.html_wrapper(out_subdirs['statistic'],
                                     time.asctime(time.localtime(end_time)),
                                     num_pdb_files,
-                                    runtime,
-                                    avg_num_edges_in_graph,
-                                    avg_num_edges_on_atom_level,
+                                    format(runtime, '.4f'),
+                                    format(avg_num_edges_in_graph, '.2f'),
+                                    format(avg_num_edges_on_atom_level, '.2f'),
                                     aas_contributing,
-                                    avg_num_aas_per_graph,
-                                    avg_num_aas_contributing_per_graph,
-                                    avg_atom_atom_per_edge,
+                                    format(avg_num_aas_per_graph, '.2f'),
+                                    format(avg_num_aas_contributing_per_graph, '.2f'),
+                                    format(avg_atom_atom_per_edge, '.2f'),
                                     all_aas,
                                     all_atom_atom_contacts,
                                     edges_ppi,
                                     num_contacts_per_atom)
 
     # If arguments are given, run those instead.
-
 
     out_dir = initialize.check_output_path(out_dir)
     # Download PDB files.
@@ -367,13 +366,13 @@ def main():
         output_results.html_wrapper(out_dir,
                                     time.asctime(time.localtime(end_time)),
                                     num_pdb_files,
-                                    runtime,
-                                    avg_num_edges_in_graph,
-                                    avg_num_edges_on_atom_level,
+                                    format(runtime, '.4f'),
+                                    format(avg_num_edges_in_graph, '.2f'),
+                                    format(avg_num_edges_on_atom_level, '.2f'),
                                     aas_contributing,
-                                    avg_num_aas_per_graph,
-                                    avg_num_aas_contributing_per_graph,
-                                    avg_atom_atom_per_edge,
+                                    format(avg_num_aas_per_graph, '.2f'),
+                                    format(avg_num_aas_contributing_per_graph, '.2f'),
+                                    format(avg_atom_atom_per_edge, '.2f'),
                                     all_aas,
                                     all_atom_atom_contacts,
                                     edges_ppi,
