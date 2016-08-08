@@ -202,6 +202,20 @@ def html_wrapper(out_dir,
     :param all_resdiue_residue_contacts: Number of all contacts on residue level.
     :param num_contacts_per_atom: List of atoms and the number of contacts they are part of.
     """
+    top_one = 'N.A.'
+    top_two = 'N.A.'
+    top_three = 'N.A.'
+    top_four = 'N.A.'
+    top_five = 'N.A.'
+    try:
+        top_one = num_contacts_per_atom[0]
+        top_two = num_contacts_per_atom[1]
+        top_three = num_contacts_per_atom[2]
+        top_four = num_contacts_per_atom[3]
+        top_five = num_contacts_per_atom[4]
+    except IndexError:
+        pass
+
     html_framework = r"""<!DOCTYPE html>
 <html>
     <head>
@@ -336,7 +350,7 @@ def html_wrapper(out_dir,
             <p>Number of all amino acids: {}<br>
             Number of amino acids contributing to PPIs: {}<br>
             &#216; number of amino acids per graph: {}<br>
-            &#216; number of amino acids contributing to PPIs per graph: {}
+            &#216; number of amino acids contributing to PPIs per graph: {}<br>
             types of AAs:<br>
             types of AAs that are part of a contact:</p>
 
@@ -356,8 +370,7 @@ def html_wrapper(out_dir,
 </html>""".format(date_time, processed_files, runtime, all_atom_atom_contacts,
                   all_resdiue_residue_contacts, edges_ppi, edges_atom, all_aas, aas_contributing,
                   aas_per_graph, aas_contributing_per_graph, atom_per_edge,
-                  num_contacts_per_atom[0], num_contacts_per_atom[1], num_contacts_per_atom[2],
-                  num_contacts_per_atom[3], num_contacts_per_atom[4])
+                  top_one, top_two, top_three, top_four, top_five)
 
     with open(os.path.join(out_dir, 'results.html'), 'w') as f:
         f.write(html_framework)
