@@ -278,7 +278,8 @@ def main():
         for index in pdb_ids:
             plcc.calculate_ppi(index)
         for files in os.listdir(in_dir):
-            if files.endswith(('.gml', '.stats', '.fanmod', '.id', '.csv', '.py')):
+            if files.endswith(('.gml', '.stats', '.fanmod', '.id', '.csv', '.py')) \
+                    and in_dir != out_dir:
                 shutil.move(files, out_dir)
         os.chdir(cwd)
     elif args.ppi == 'with-ligands':
@@ -291,7 +292,8 @@ def main():
         for index in pdb_ids:
             plcc.calculate_ppi_incl_ligands(index)
         for files in os.listdir(in_dir):
-            if files.endswith(('.gml', '.stats', '.fanmod', '.id', '.csv', '.py')):
+            if files.endswith(('.gml', '.stats', '.fanmod', '.id', '.csv', '.py')) \
+                    and in_dir != out_dir:
                 shutil.move(files, out_dir)
         os.chdir(cwd)
     elif args.ppi == 'no-pi-effects':
