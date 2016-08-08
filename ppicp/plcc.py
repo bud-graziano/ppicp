@@ -56,8 +56,8 @@ def calculate_ppi(pdb_path):
             return False
     elif platform.system() == 'Linux':
         try:
-            print subprocess.check_output([java_exec, '-jar',
-                                           initialize.BIN_DIR + '/plcc.jar',
+            print subprocess.check_output([java_exec.rstrip('\n'), '-jar',
+                                           os.path.join(initialize.BIN_DIR, 'plcc.jar'),
                                            pdb_path[:4], '--alt-aa-contacts'])
             return True
         except (OSError, subprocess.CalledProcessError) as err:
@@ -91,8 +91,8 @@ def calculate_ppi_incl_ligands(pdb_path):
             return False
     elif platform.system() == 'Linux':
         try:
-            print subprocess.check_output([java_exec, '-jar',
-                                           initialize.BIN_DIR + '/plcc.jar',
+            print subprocess.check_output([java_exec.rstrip('\n'), '-jar',
+                                           os.path.join(initialize.BIN_DIR, 'plcc.jar'),
                                            pdb_path[:4], '--alt-aa-contacts-ligands'])
             return True
         except (OSError, subprocess.CalledProcessError) as err:
