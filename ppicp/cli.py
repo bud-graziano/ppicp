@@ -123,9 +123,9 @@ def main():
         os.chdir(out_subdirs['ppi_results'])
         for index in pdb_ids:
             plcc.pdb_models_to_chains(index.lower(), os.path.join(out_subdirs['ppi_results'],
-                                                          index.lower() + '.pdb'))
-            hydrogen.calc_hydrogen(index.lower(), os.path.join(out_subdirs['ppi_results'],
-                                                               index.lower() + '.pdb'))
+                                                                  index.lower() + '.pdb'))
+            hydrogen.calc_hydrogen(index.lower() + '.pdb', os.path.join(out_subdirs['ppi_results'],
+                                                                        index.lower() + '.pdb'))
 
         # Get the list of all PDB files including the modified.
         pdb_files = []

@@ -24,16 +24,19 @@ def calc_hydrogen(pdb_path, out_dir):
     if platform.system() == 'Windows':
         raise NotImplementedError
     elif platform.system() == 'Linux':
-        if config.get_hydrogen_app(initialize.CONF_FILE) is 'reduce':
+        if config.get_hydrogen_app(initialize.CONF_FILE) == 'reduce':
             try:
-                print subprocess.check_output([os.path.join(initialize.BIN_DIR, 'reduce'),
-                                               '-Trim', '-Quiet',
-                                               pdb_path + ' > ' + out_dir + '.stripped_h'])
-                print subprocess.check_output([os.path.join(initialize.BIN_DIR, 'reduce'),
-                                               '-build', '-DB',
-                                               os.path.join(initialize.BIN_DIR,
-                                                            'reduce_wwPDB_het_dict.txt'), '-Quiet',
-                                               out_dir + '.stripped_h' + ' > ' + out_dir])
+                with open(out_dir + 'stripped', 'w') as out:
+                    out.write(subprocess.check_output([os.path.join(initialize.BIN_DIR, 'reduce'),
+                                                       '-Trim', '-Quiet', pdb_path]))
+
+                with open(out_dir, 'w') as out:
+                    subprocess.call([os.path.join(initialize.BIN_DIR, 'reduce'), '-build', '-DB',
+                                     os.path.join(initialize.BIN_DIR, 'reduce_wwPDB_het_dict.txt'),
+                                     '-Quiet', out_dir + 'stripped'], stdout=out)
+
+                # Get rid of the overhead.
+                os.remove(out_dir + 'stripped')
                 return True
             except (OSError, subprocess.CalledProcessError) as err:
                 print('{}\nHydrogen calculations failed.'.format(err))
