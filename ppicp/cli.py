@@ -89,14 +89,16 @@ def main():
     # Parse arguments
     args = parse_args(create_parser())
 
-    # Get the input and output directories. Create the output directory structure.
+    # Get the input and output directories.
     in_dir = args.input[0]
     out_dir = args.output[0]
-    out_subdirs = initialize.init_output_dir(out_dir)
 
     # If no arguments are given, run the complete pipeline.
     if not (args.pdb or args.models2chains or args.hydrogen or args.dssp or args.motifs or
             args.statistics or args.planarity or args.ppi is not None):
+
+        # Create the output directory structure.
+        out_subdirs = initialize.init_output_dir(out_dir)
 
         # First get the input files (.pdbids). This can be multiple files.
         input_files = [f for f in os.listdir(in_dir)]
@@ -115,28 +117,24 @@ def main():
         # Since we have to change all PDB files (adding hydrogen atoms), we copy all PDB files over
         # into the mod_pdb subdir and change them inplace there.
         for files in os.listdir(out_subdirs['pdb']):
-            shutil.copy(files, out_subdirs['mod_pdb'])
+            shutil.copy(files, out_subdirs['ppi_results'])
 
         # Convert models to chains and calculate hydrogen atoms. PDB files will be changed inplace.
-        os.chdir(out_subdirs['mod_pdb'])
+        os.chdir(out_subdirs['ppi_results'])
         for index in pdb_ids:
-            plcc.pdb_models_to_chains(index, os.path.join(out_subdirs['mod_pdb'], index + '.pdb'))
-            hydrogen.calc_hydrogen(index, os.path.join(out_subdirs['mod_pdb'], index + '.pdb'))
+            plcc.pdb_models_to_chains(index, os.path.join(out_subdirs['ppi_results'],
+                                                          index + '.pdb'))
+            hydrogen.calc_hydrogen(index, os.path.join(out_subdirs['ppi_results'], index + '.pdb'))
 
-        # Get the list of all modified PDB files.
+        # Get the list of all PDB files including the modified.
         pdb_files = []
-        for pdb_file in os.listdir(out_subdirs['mod_pdb']):
-            if initialize.is_pdb_file(os.path.join(out_subdirs['mod_pdb'], pdb_file)):
+        for pdb_file in os.listdir(out_subdirs['ppi_results']):
+            if initialize.is_pdb_file(os.path.join(out_subdirs['ppi_results'], pdb_file)):
                 pdb_files.append(pdb_file)
 
-        # Download DSSP files into the dssp subdir.
-        dssp.dssp_download(pdb_files, out_subdirs['dssp'],
+        # Download DSSP files.
+        dssp.dssp_download(pdb_files, out_subdirs['ppi_results'],
                            config.get_num_dssp_dl_threads(conf_path))
-
-        # Copy the DSSP files into the mod_pdb subdir. Again, we need those files for the PPI
-        # calculations.
-        for files in os.listdir(out_subdirs['dssp']):
-            shutil.copy(os.path.join(out_subdirs['dssp'], files), out_subdirs['mod_pdb'])
 
         # Calculate PPIs for all PDB files in the mod_pdb subdir.
         for index in pdb_ids:
@@ -149,24 +147,25 @@ def main():
         all_contacts = collections.Counter()
         all_aas = 0
         atom_contacts = {}
-        for files in os.listdir(out_subdirs['mod_pdb']):
+        for files in os.listdir(out_subdirs['ppi_results']):
             if files.endswith('.fanmod'):
                 edges_ppi += statistics.count_edges_in_ppi_aa_graph(
-                    os.path.join(out_subdirs['mod_pdb'], files))
+                    os.path.join(out_subdirs['ppi_results'], files))
                 vertices_ppi += statistics.count_vertices_in_ppi_aa_graph(
-                    os.path.join(out_subdirs['mod_pdb'], files))
+                    os.path.join(out_subdirs['ppi_results'], files))
             elif files.endswith('.stats'):
                 all_contacts += collections.Counter(statistics.count_all_contacts(
-                    os.path.join(out_subdirs['mod_pdb'], files)))
+                    os.path.join(out_subdirs['ppi_results'], files)))
             elif files.endswith('.csv'):
                 atom_contacts.update(statistics.count_atom_num_contacts(
-                    os.path.join(out_subdirs['mod_pdb'], files)))
+                    os.path.join(out_subdirs['ppi_results'], files)))
             elif files.endswith('aagraph.gml'):
-                all_aas += statistics.count_aas_in_aa_graph(os.path.join(out_subdirs['mod_pdb'],
+                all_aas += statistics.count_aas_in_aa_graph(os.path.join(out_subdirs['ppi_results'],
                                                                          files))
             elif files.endswith('.pdb'):
                 num_pdb_files += 1
 
+        # Create and save the charts.
         output_results.bar_chart_types_of_contacts(all_contacts, out_subdirs['imgs'])
         output_results.bar_chart_hydrogen(all_contacts, out_subdirs['imgs'])
         output_results.bar_chart_hydrogen_verbose(all_contacts, out_subdirs['imgs'])
@@ -175,6 +174,7 @@ def main():
         output_results.bar_chart_pi_effects(all_contacts, out_subdirs['imgs'])
         output_results.bar_chart_pi_effects_verbose(all_contacts, out_subdirs['imgs'])
 
+        # Calculate statistics.
         end_time = time.time()
         runtime = (end_time - start_time) / 60
         all_atom_atom_contacts = statistics.amount_atom_contacts(all_contacts)
@@ -199,6 +199,7 @@ def main():
 
         num_contacts_per_atom = sorted(atom_contacts.items(), key=lambda x: x[1], reverse=True)
 
+        # Save everything in the output HTML file.
         output_results.html_wrapper(out_subdirs['statistic'],
                                     time.asctime(time.localtime(end_time)),
                                     num_pdb_files,
@@ -216,6 +217,8 @@ def main():
 
     # If arguments are given, run those instead.
 
+
+    out_dir = initialize.check_output_path(out_dir)
     # Download PDB files.
     if args.pdb:
         input_files = [f for f in os.listdir(in_dir)]
@@ -224,7 +227,7 @@ def main():
             if initialize.is_valid_input_file(os.path.join(in_dir, pdb_list_file)):
                 pdb_ids += (utilities.get_pdb_ids_from_file(os.path.join(in_dir, pdb_list_file)))
 
-        os.chdir(out_subdirs['pdb'])
+        os.chdir(out_dir)
         pdb.pdb_download(pdb_ids, config.get_num_pdb_dl_threads(conf_path))
         os.chdir(cwd)
 
@@ -238,7 +241,7 @@ def main():
 
         os.chdir(in_dir)
         for index in pdb_ids:
-            plcc.pdb_models_to_chains(index, os.path.join(out_subdirs['mod_pdb'], index))
+            plcc.pdb_models_to_chains(index, os.path.join(out_dir, index))
         os.chdir(cwd)
 
     # Add hydrogen atoms to the PDB file.
@@ -251,7 +254,7 @@ def main():
 
         os.chdir(in_dir)
         for index in pdb_ids:
-            hydrogen.calc_hydrogen(index, out_subdirs['mod_pdb'] + index)
+            hydrogen.calc_hydrogen(index, os.path.join(out_dir, index))
         os.chdir(cwd)
 
     # Download DSSP files.
@@ -263,8 +266,7 @@ def main():
                 pdb_ids.append(pdb_id)
 
         os.chdir(in_dir)
-        dssp.dssp_download(pdb_ids, out_subdirs['dssp'], config.get_num_dssp_dl_threads(initialize
-                                                                                        .CONF_FILE))
+        dssp.dssp_download(pdb_ids, out_dir, config.get_num_dssp_dl_threads(initialize.CONF_FILE))
         os.chdir(cwd)
 
     if args.ppi == 'all':
@@ -276,6 +278,9 @@ def main():
         os.chdir(in_dir)
         for index in pdb_ids:
             plcc.calculate_ppi(index)
+        for files in os.listdir(in_dir):
+            if files.endswith(('.gml', '.stats', '.fanmod', '.id', '.csv', '.py')):
+                shutil.move(files, out_dir)
         os.chdir(cwd)
     elif args.ppi == 'with-ligands':
         input_files = [f for f in os.listdir(in_dir)]
@@ -286,6 +291,9 @@ def main():
         os.chdir(in_dir)
         for index in pdb_ids:
             plcc.calculate_ppi_incl_ligands(index)
+        for files in os.listdir(in_dir):
+            if files.endswith(('.gml', '.stats', '.fanmod', '.id', '.csv', '.py')):
+                shutil.move(files, out_dir)
         os.chdir(cwd)
     elif args.ppi == 'no-pi-effects':
         raise NotImplementedError
@@ -318,26 +326,45 @@ def main():
             elif ppi_files.endswith('.pdb'):
                 num_pdb_files += 1
 
-        output_results.bar_chart_types_of_contacts(all_contacts, out_subdirs['imgs'])
-        output_results.bar_chart_hydrogen(all_contacts, out_subdirs['imgs'])
-        output_results.bar_chart_hydrogen_verbose(all_contacts, out_subdirs['imgs'])
-        output_results.bar_chart_vdw(all_contacts, out_subdirs['imgs'])
-        output_results.bar_chart_ligands(all_contacts, out_subdirs['imgs'])
-        output_results.bar_chart_pi_effects(all_contacts, out_subdirs['imgs'])
-        output_results.bar_chart_pi_effects_verbose(all_contacts, out_subdirs['imgs'])
+        # Create the 'imgs' subdirectory if it is not already there.
+        initialize.check_output_path(os.path.join(out_dir, 'imgs'))
 
+        # Create and save the charts.
+        output_results.bar_chart_types_of_contacts(all_contacts, os.path.join(out_dir, 'imgs'))
+        output_results.bar_chart_hydrogen(all_contacts, os.path.join(out_dir, 'imgs'))
+        output_results.bar_chart_hydrogen_verbose(all_contacts, os.path.join(out_dir, 'imgs'))
+        output_results.bar_chart_vdw(all_contacts, os.path.join(out_dir, 'imgs'))
+        output_results.bar_chart_ligands(all_contacts, os.path.join(out_dir, 'imgs'))
+        output_results.bar_chart_pi_effects(all_contacts, os.path.join(out_dir, 'imgs'))
+        output_results.bar_chart_pi_effects_verbose(all_contacts, os.path.join(out_dir, 'imgs'))
+
+        # Calculate statistics.
         end_time = time.time()
         runtime = (end_time - start_time) / 60
         all_atom_atom_contacts = statistics.amount_atom_contacts(all_contacts)
-        avg_num_edges_in_graph = edges_ppi / num_pdb_files
-        avg_num_edges_on_atom_level = all_atom_atom_contacts / num_pdb_files
         aas_contributing = vertices_ppi
-        avg_num_aas_per_graph = all_aas / num_pdb_files
-        avg_num_aas_contributing_per_graph = aas_contributing / num_pdb_files
-        avg_atom_atom_per_edge = avg_num_edges_on_atom_level / avg_num_edges_in_graph
+        try:
+            avg_num_edges_in_graph = edges_ppi / num_pdb_files
+            avg_num_edges_on_atom_level = all_atom_atom_contacts / num_pdb_files
+            avg_num_aas_per_graph = all_aas / num_pdb_files
+            avg_num_aas_contributing_per_graph = aas_contributing / num_pdb_files
+            avg_atom_atom_per_edge = avg_num_edges_on_atom_level / avg_num_edges_in_graph
+        except ZeroDivisionError as err:
+            print('{}\nEither the number of PDB files was zero or the average number of edges in a '
+                  'PPI AA graph was zero.'.format(err))
+            if avg_num_edges_in_graph == 0:
+                avg_atom_atom_per_edge = -1
+            else:
+                avg_num_edges_in_graph = -1
+                avg_num_edges_on_atom_level = -1
+                avg_num_aas_per_graph = -1
+                avg_num_aas_contributing_per_graph = -1
+                avg_atom_atom_per_edge = -1
+
         num_contacts_per_atom = sorted(atom_contacts.items(), key=lambda x: x[1], reverse=True)
 
-        output_results.html_wrapper(out_subdirs['statistic'],
+        # Save everything in the output HTML file.
+        output_results.html_wrapper(out_dir,
                                     time.asctime(time.localtime(end_time)),
                                     num_pdb_files,
                                     runtime,

@@ -29,18 +29,14 @@ def init_output_dir(out_dir):
     :param out_dir: Path to the output directory root.
     :return: a dictionary of the paths to the output subfolders.
     """
-    pdb_files = os.path.join(out_dir, 'pdb')
-    modified_pdb_files = os.path.join(out_dir, 'modified_pdb_files')
-    dssp_files = os.path.join(out_dir, 'dssp')
-    ppi_files = os.path.join(out_dir, 'ppi')
+    pdb_files = os.path.join(out_dir, 'pdb_original')
+    ppi_results = os.path.join(out_dir, 'ppi_results')
     motif_files = os.path.join(out_dir, 'motifs')
     statistic_files = os.path.join(out_dir, 'statistics')
     planarity_files = os.path.join(out_dir, 'planarity')
 
     check_output_path(pdb_files)
-    check_output_path(modified_pdb_files)
-    check_output_path(dssp_files)
-    check_output_path(ppi_files)
+    check_output_path(ppi_results)
     check_output_path(motif_files)
     check_output_path(statistic_files)
     check_output_path(planarity_files)
@@ -48,9 +44,8 @@ def init_output_dir(out_dir):
     img_files = os.path.join(statistic_files, 'imgs')
     check_output_path(img_files)
 
-    return {'pdb': pdb_files, 'mod_pdb': modified_pdb_files, 'dssp': dssp_files, 'ppi': ppi_files,
-            'motif': motif_files, 'statistic': statistic_files, 'planarity': planarity_files,
-            'imgs': img_files}
+    return {'pdb': pdb_files, 'ppi_results': ppi_results, 'motif': motif_files,
+            'statistic': statistic_files, 'planarity': planarity_files, 'imgs': img_files}
 
 
 def is_pdb_file(path):
