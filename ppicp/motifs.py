@@ -75,7 +75,7 @@ def calculate_motifs(motif_size, in_file, out_file):
     elif platform.system() == 'Linux':
         try:
             print subprocess.check_output([os.path.join(initialize.BIN_DIR, 'fanmod_linux'),
-                                           motif_size,
+                                           str(motif_size),
                                            config.get_fanmod_num_samples(config_file),
                                            config.get_fanmod_enum(config_file),
                                            in_file,

@@ -27,6 +27,7 @@ import config
 import dssp
 import hydrogen
 import initialize
+import motifs
 import output_results
 import pdb
 import plcc
@@ -302,8 +303,17 @@ def main():
     elif args.ppi == 'ligands-no-pi-effects':
         raise NotImplementedError
 
+    # Detect motifs.
     if args.motifs:
-        raise NotImplementedError
+        input_files = [f for f in os.listdir(in_dir)]
+        for fm_file in input_files:
+            if fm_file.endswith('.fanmod'):
+                for motif_size in xrange(3, 9):
+                    motifs.calculate_motifs(motif_size,
+                                            os.path.join(in_dir, fm_file),
+                                            os.path.join(out_dir, fm_file[:4]) +
+                                            '_{}_fanmod'.format(motif_size))
+
     if args.statistics:
         input_files = [f for f in os.listdir(in_dir)]
         num_pdb_files = 0
