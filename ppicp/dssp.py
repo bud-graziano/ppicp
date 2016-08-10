@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 """
+ppicp.dssp
+~~~~~~~~~~
+
 Handles all the interaction with the DSSP server, i.e. calculating and downloading DSSP files.
 """
 
@@ -37,6 +40,7 @@ def pdb_to_dssp(pdb_id, rest_url, out_dir):
     """
     Uploads a PDB file to the DSSP server, which calculates the corresponding DSSP file, and then
     downloads the generated DSSP file.
+
     :param out_dir: Where the DSSP files are saved.
     :param pdb_id: PDB file for which the DSSP file should be generated.
     :param rest_url: Url of the rest API of the DSSP server.
@@ -113,6 +117,7 @@ def dssp_download(pdb_ids, out_dir, num_threads):
     Main function to be run when this file is executed.
     Takes the path to a directory with PDB files from user input and downloads the corresponding
     DSSP file.
+
     :param out_dir: Where the DSSP files are saved.
     :param pdb_ids: Path to a directory containing PDB files.
     :param num_threads: determines how many files should be downloaded in parallel.

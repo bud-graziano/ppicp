@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 """
+ppicp.initialize
+~~~~~~~~~~~~~~~~
+
 Initialize folder structures and the config file.
 Everything that is needed to run the actual application smoothly.
 """
@@ -26,6 +29,7 @@ def conf():
 def init_output_dir(out_dir):
     """
     Initialize the output directory structure.
+
     :param out_dir: Path to the output directory root.
     :return: a dictionary of the paths to the output subfolders.
     """
@@ -51,6 +55,7 @@ def init_output_dir(out_dir):
 def is_pdb_file(path):
     """
     Checks if the specified path points to a PDB file.
+
     :param path: to the input file.
     :return: True if the directory exists, false otherwise.
     """
@@ -61,6 +66,7 @@ def is_pdb_file(path):
 def is_valid_input_file(path):
     """
     Checks if the specified path points to a valid file.
+
     :param path: to the input file.
     :return: True if the directory exists, false otherwise.
     """
@@ -71,6 +77,7 @@ def is_valid_input_file(path):
 def is_valid_directory(path):
     """
     Checks if the specified path points to a valid directory.
+
     :param path: to the input directory.
     :return: True if directory exists, false otherwise.
     """
@@ -82,6 +89,7 @@ def check_input_path(path, parser):
     """
     Checks if the specified input is correct.
     That is, the input path points to a a file or a directory.
+
     :param path: input path.
     :param parser: the parser object.
     :return: the type of the input.
@@ -102,6 +110,7 @@ def check_output_path(path):
     """
     Checks if the output path already exists, if not a new directory is created at the specified
     path.
+
     :param path: to the output directory
     :return: type of the output object.
     """

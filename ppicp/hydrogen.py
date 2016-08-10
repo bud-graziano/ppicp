@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 """
+ppicp.hydrogen
+~~~~~~~~~~~~~~
+
 Functions that handle the stripping and re-adding/calculating of hydrogen atoms to PDB files.
 """
 
@@ -16,7 +19,8 @@ import initialize
 def calc_hydrogen(pdb_path, out_dir):
     """
     Calculates hydrogen atoms for a given PDB file and saves the added hydrogen atoms to a new PDB
-    file.
+    file. This is done by invoking the ``reduce`` software.
+
     :param pdb_path: The PDB file.
     :param out_dir: Where the resulting files are saved.
     :return: True if successful, False otherwise.

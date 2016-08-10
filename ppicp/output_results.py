@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 """
+ppicp.output_results
+~~~~~~~~~~~~~~~~~~~~
+
 Collection of functions to generate graphs/charts that visualize the results of the PPI
 calculations.
 """
@@ -12,6 +15,7 @@ import pygal
 def bar_chart_types_of_contacts(all_contacts_dict, out_dir):
     """
     Generate and save a bar chart to give an overview of all detected contact types.
+
     :param all_contacts_dict: Dictionary containing all contact types.
     :param out_dir: Path to the output directory.
     """
@@ -48,6 +52,7 @@ def bar_chart_types_of_contacts(all_contacts_dict, out_dir):
 def bar_chart_hydrogen_verbose(all_contacts_dict, out_dir):
     """
     Generate and save a bar chart showing detailed information about detected hydrogen bonds.
+
     :param all_contacts_dict: Dictionary containing all contact types.
     :param out_dir: Path to the output directory.
     """
@@ -69,6 +74,7 @@ def bar_chart_hydrogen_verbose(all_contacts_dict, out_dir):
 def bar_chart_hydrogen(all_contacts_dict, out_dir):
     """
     Generate and save a bar chart showing summarized information about detected hydrogen bonds.
+
     :param all_contacts_dict: Dictionary containing all contact types.
     :param out_dir: Path to the output directory.
     """
@@ -90,6 +96,7 @@ def bar_chart_hydrogen(all_contacts_dict, out_dir):
 def bar_chart_vdw(all_contacts_dict, out_dir):
     """
     Generate and save a bar chart showing information about detected van der Waals interactions.
+
     :param all_contacts_dict: Dictionary containing all contact types.
     :param out_dir: Path to the output directory.
     """
@@ -106,6 +113,7 @@ def bar_chart_vdw(all_contacts_dict, out_dir):
 def bar_chart_ligands(all_contacts_dir, out_dir):
     """
     Generate and save a bar chart showing information about detected ligand contacts.
+
     :param all_contacts_dir: Dictionary containing all contact types.
     :param out_dir: Path to the output directory.
     """
@@ -122,6 +130,7 @@ def bar_chart_ligands(all_contacts_dir, out_dir):
 def bar_chart_pi_effects_verbose(all_contacts_dict, out_dir):
     """
     Generate and save a bar chart showing detailed information about detected pi-effects.
+
     :param all_contacts_dict: Dictionary containing all contact types.
     :param out_dir: Path to the output directory.
     """
@@ -151,6 +160,7 @@ def bar_chart_pi_effects_verbose(all_contacts_dict, out_dir):
 def bar_chart_pi_effects(all_contacts_dict, out_dir):
     """
     Generate and save a bar chart showing summarized information about detected pi-effects.
+
     :param all_contacts_dict: Dictionary containing all contact types.
     :param out_dir: Path to the output directory.
     """
@@ -186,6 +196,7 @@ def html_wrapper(out_dir,
     Generate and save a html file which shows all statistics after the PPI calculations are
     finished. This includes general information about the runtime, etc., as well as various graphs
     and other statistics.
+
     :param out_dir: Path to the output directory.
     :param date_time: The date and time the results are generated.
     :param processed_files: Number of processed files.
@@ -195,7 +206,7 @@ def html_wrapper(out_dir,
     :param aas_contributing: Number of amino acids contributing to PPIs.
     :param aas_per_graph: Avg. number of amino acids per AA graph.
     :param aas_contributing_per_graph: Avg. number of amino acids per PPI AA graph that contribute
-    to PPIs.
+     to PPIs.
     :param atom_per_edge: Avg. number of contacts on atom-atom level per edge in a PPI AA graph.
     :param all_aas: Number of all amino acids.
     :param all_atom_atom_contacts: Number of all contacts on atom level.

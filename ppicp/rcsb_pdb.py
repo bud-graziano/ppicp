@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 """
+ppicp.rcsb_pdb
+~~~~~~~~~~~~~~
+
 Handles all the interaction with the PDB servers, i.e. downloading PDB files.
 """
 
@@ -39,6 +42,7 @@ class PdbDownloader(threading.Thread):
 def retrieve_pdb_bio_assembly_file(pdb_id, url):
     """
     Download the biological assembly (biological unit) PDB file from the PDB's ftp server.
+
     :param pdb_id: PDB ID for which the PDB file should be downloaded.
     :param url: from where the PDB files are downloaded.
     :return: True if download was successful, False otherwise.
@@ -78,6 +82,7 @@ def pdb_download(pdb_ids, num_threads):
     """
     Main function to be run when this file is executed. Downloads PDB files.
     Takes a list of PDB IDs from user input and downloads the corresponding PDB files.
+
     :param pdb_ids: List of PDB-IDs.
     :param num_threads: determines how many files should be downloaded in parallel.
     :return: True if finished.

@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 """
+ppicp.config
+~~~~~~~~~~~~
 Handles the config of the PPI Calculation Pipeline.
 """
 
@@ -12,6 +14,7 @@ def write_config(out_path):
     """
     Write the config file with default parameters to the user's home directory if it not already
     exists there.
+
     :param out_path: Where the config file should be stored.
     """
     config = ConfigParser.SafeConfigParser()
@@ -69,6 +72,7 @@ def write_config(out_path):
 def get_num_pdb_dl_threads(conf_path):
     """
     Get the number of threads from the config file that should be used to download PDB files.
+
     :param conf_path: Path to the config file.
     :return: number of threads.
     """
@@ -80,6 +84,7 @@ def get_num_pdb_dl_threads(conf_path):
 def get_num_dssp_dl_threads(conf_path):
     """
     Get the number of threads from the config file that should be used to download DSSP files.
+
     :param conf_path: Path to the config file.
     :return: number of threads.
     """
@@ -92,6 +97,7 @@ def get_java_exec_path(conf_path):
     """
     Get the path to the java executable. If no path is found, application will later try to find
     the path on its own.
+
     :param conf_path: Path to the config file.
     :return: path to the java executable.
     """
@@ -107,6 +113,7 @@ def get_hydrogen_app(conf_path):
     """
     Get the command-line string that will be run in order to calculate the hydrogen atoms. If the
     option is set to "reduce", the Reduce software will be run to do this task.
+
     :param conf_path: Path to the config file.
     :return: the command-line string.
     """
@@ -119,6 +126,7 @@ def get_motifs_app(conf_path):
     """
     Get the command-line string that will be run in order to calculate the motifs. If the option is
     set to "fanmod", the Fanmod software will be used to do this task.
+
     :param conf_path: Path to the config file.
     :return: the command-line string.
     """
@@ -130,6 +138,7 @@ def get_motifs_app(conf_path):
 def get_fanmod_num_samples(conf_path):
     """
     Get the number of samples that will be used to determine the approximate number of subgraphs.
+
     :param conf_path: Path to the config file.
     :return: the number of samples.
     """
@@ -141,6 +150,7 @@ def get_fanmod_num_samples(conf_path):
 def get_fanmod_enum(conf_path):
     """
     Check whether Fanmod should run a full enumeration to calculate the subgraphs or sampling.
+
     :param conf_path: Path to the config file.
     :return: 1 if full enumeration, 0 if sampling.
     """
@@ -152,6 +162,7 @@ def get_fanmod_enum(conf_path):
 def get_fanmod_directed(conf_path):
     """
     Check whether the edges are treated as directed or undirected edges.
+
     :param conf_path: Path to the config file.
     :return: 1 if directed, 0 if undirected.
     """
@@ -163,6 +174,7 @@ def get_fanmod_directed(conf_path):
 def get_fanmod_colored_vertices(conf_path):
     """
     Check whether the vertices are treated as colored vertices or not.
+
     :param conf_path: Path to the config file.
     :return: 1 if colored, 0 if not colored.
     """
@@ -174,6 +186,7 @@ def get_fanmod_colored_vertices(conf_path):
 def get_fanmod_colored_edges(conf_path):
     """
     Check whether the edges are treated as colored edges or not.
+
     :param conf_path: Path to config file.
     :return: 1 if colored, 0 if not colored.
     """
@@ -185,6 +198,7 @@ def get_fanmod_colored_edges(conf_path):
 def get_fanmod_random_type(conf_path):
     """
     Check which type of random networks should be generated.
+
     :param conf_path: Path to the config file.
     :return: 0 if no regard, 1 if global constant, or 2 if local constant.
     """
@@ -196,6 +210,7 @@ def get_fanmod_random_type(conf_path):
 def get_fanmod_regard_vert_color(conf_path):
     """
     Check if the vertex colors should be considered during the generation of random networks.
+
     :param conf_path: Path to the config file.
     :return: 1 if vertex colors are considered, 0 if not.
     """
@@ -207,6 +222,7 @@ def get_fanmod_regard_vert_color(conf_path):
 def get_fanmod_regard_edg_color(conf_path):
     """
     Check if the edge colors should be considered during the generation of random networks.
+
     :param conf_path: Path to the config file.
     :return: 1 if edge colors are considered, 0 if not.
     """
@@ -218,6 +234,7 @@ def get_fanmod_regard_edg_color(conf_path):
 def get_fanmod_reestimate(conf_path):
     """
     Check if the number of subgraphs should be re-estimated.
+
     :param conf_path: Path to the config file.
     :return: 1 if subgraphs should be re-estimated, 0 if not.
     """
@@ -229,6 +246,7 @@ def get_fanmod_reestimate(conf_path):
 def get_fanmod_num_rand_networks(conf_path):
     """
     Get the number of random networks that will be generated.
+
     :param conf_path: Path to the config file.
     :return: the number of random networks.
     """
@@ -240,6 +258,7 @@ def get_fanmod_num_rand_networks(conf_path):
 def get_fanmod_num_exchanges_per_edge(conf_path):
     """
     Get the number of exchanges per edge for the random networks.
+
     :param conf_path: Path to the config file.
     :return: the number of exchanges per edge.
     """
@@ -251,6 +270,7 @@ def get_fanmod_num_exchanges_per_edge(conf_path):
 def get_fanmod_num_exchange_attempts(conf_path):
     """
     Get the number of exchange attempts per edge for the random networks.
+
     :param conf_path: Path to the config file.
     :return: the number of exchange attempts per edge.
     """
@@ -262,6 +282,7 @@ def get_fanmod_num_exchange_attempts(conf_path):
 def get_fanmod_outfile_format(conf_path):
     """
     Get the output file format. The options are ASCII format or CSV format.
+
     :param conf_path: Path to the config file.
     :return: 1 if ASCII output file format, 0 if CSV.
     """
@@ -274,6 +295,7 @@ def get_fanmod_dumpfile(conf_path):
     """
     Check if a dumpfile should be generated. The dumpfile will contain a list of all subnetworks
     found in the input network including their adjacency matrix and the participating vertices.
+
     :param conf_path: Path to the config file.
     :return: 1 if dumpfile is created, 0 if not.
     """

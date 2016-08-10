@@ -2,10 +2,12 @@
 
 """
 PPICP -- Protein-Protein Interaction Calculation Pipeline
+---------------------------------------------------------
 
 A scientific software for the calculation of protein-protein interactions (PPIs).
 The pipeline runs various third party software to compute PPIs.
 It consists of four major steps:
+
     1. Downloading of input data based on user input (data from PDB, DSSP, and Reduce).
     2. Calculation of PPIs.
     3. Motif detection in PPIs-graphs.
@@ -13,6 +15,9 @@ It consists of four major steps:
 
 For more information about the third party software and the pipeline itself please refer to the
 documentation.
+
+ppicp.cli
+~~~~~~~~~
 """
 
 from __future__ import division
@@ -29,7 +34,7 @@ import hydrogen
 import initialize
 import motifs
 import output_results
-import pdb
+import rcsb_pdb
 import plcc
 import statistics
 import utilities
@@ -38,6 +43,7 @@ import utilities
 def create_parser():
     """
     Create a CLI parser.
+
     :return: the parser object.
     """
     cli_parser = argparse.ArgumentParser(description="PPICP -- Protein-Protein Interaction "
@@ -66,6 +72,7 @@ def create_parser():
 def parse_args(parser):
     """
     Parse the arguments of a parser object.
+
     :param parser: the parser object.
     :return: the specified arguments.
     """
@@ -111,7 +118,7 @@ def main():
 
         # Download the PDB files into the pdb subdirectory.
         os.chdir(out_subdirs['pdb'])
-        pdb.pdb_download(pdb_ids, config.get_num_pdb_dl_threads(conf_path))
+        rcsb_pdb.pdb_download(pdb_ids, config.get_num_pdb_dl_threads(conf_path))
 
         # Copy the files into the mod_pdb directory. Later, for the PPI calculation, we need all
         # files in the mod_pdb subdir.
@@ -238,7 +245,7 @@ def main():
                 pdb_ids += (utilities.get_pdb_ids_from_file(os.path.join(in_dir, pdb_list_file)))
 
         os.chdir(out_dir)
-        pdb.pdb_download(pdb_ids, config.get_num_pdb_dl_threads(conf_path))
+        rcsb_pdb.pdb_download(pdb_ids, config.get_num_pdb_dl_threads(conf_path))
         os.chdir(cwd)
 
     # Convert Models in PDB files to chains.

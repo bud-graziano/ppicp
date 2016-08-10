@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 """
+ppicp.plcc
+~~~~~~~~~~
+
 Calculate PPIs (in parallel and without ligands if specified) and convert models in PDB files to
 chains.
 """
@@ -37,6 +40,7 @@ def calculate_ppi(pdb_path):
     """
     Calculates the protein-protein interactions by executing the plcc.jar code with the necessary
     flags.
+
     :param pdb_path: PDB ID.
     :return: True if the calculation was successful, False otherwise.
     """
@@ -70,8 +74,9 @@ def calculate_ppi(pdb_path):
 
 def calculate_ppi_incl_ligands(pdb_path):
     """
-    Calculates the protein-protein interactions including ligands by executing the plcc.jar code
+    Calculates the protein-protein interactions including ligands by executing the ``plcc.jar`` code
     with the necessary flags.
+
     :param pdb_path: PDB ID.
     :return: True if the calculation was successful, False otherwise.
     """
@@ -105,9 +110,10 @@ def calculate_ppi_incl_ligands(pdb_path):
 
 def pdb_models_to_chains(pdb_path, out_dir):
     """
-    Runs the splitpdb.jar code with necessary flags that takes PDB files containing multiple models
-    and generates PDB files that only contain one model. This is needed for later DSSP calculations
-    to be correct.
+    Runs the ``splitpdb.jar`` code with necessary flags that takes PDB files containing multiple
+    modelsand generates PDB files that only contain one model. This is needed for later DSSP
+    calculations to be correct.
+
     :param out_dir: Where the converted PDB files are saved.
     :param pdb_path: PDB ID.
     :return: True if the calculation was successful, False otherwise.

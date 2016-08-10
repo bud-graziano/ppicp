@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 """
+ppicp.utilities
+~~~~~~~~~~~~~~~
+
 Toolkit of various functions.
 """
 
@@ -17,6 +20,7 @@ def get_pdb_ids_from_file(path_to_file):
     """
     Takes a path to a file that stores line-separated PDB-IDs and returns a list of all found
     PDB-IDs.
+
     :param path_to_file: path to a file containing line separated PDB-IDs.
     :return: List of all found PDB-IDs.
     """
@@ -31,6 +35,7 @@ def get_pdb_ids_from_file(path_to_file):
 def get_drives():
     """
     Get all the available drives on the computer.
+
     :return: the drives.
     """
     drives = []
@@ -45,6 +50,7 @@ def get_drives():
 def get_jre_path():
     """
     Get the path to the java runtime environment.
+
     :return: the path to the jre.
     """
     if platform.system() == 'Windows':
