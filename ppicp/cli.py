@@ -142,6 +142,15 @@ def main():
         for index in pdb_ids:
             plcc.calculate_ppi(index.lower())
 
+        # Detect motifs.
+        for fm_file in os.listdir(out_subdirs['ppi_results']):
+            if fm_file.endswith('.fanmod'):
+                for motif_size in xrange(3, 9):
+                    motifs.calculate_motifs(motif_size,
+                                            os.path.join(out_subdirs['ppi_results'], fm_file),
+                                            os.path.join(out_subdirs['motif'], fm_file[:4]) +
+                                            '_{}_fanmod'.format(motif_size))
+
         # Calculate statistics based on the PPI results.
         num_pdb_files = 0
         edges_ppi = 0
