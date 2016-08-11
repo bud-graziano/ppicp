@@ -12,11 +12,18 @@ import os
 import Queue
 import threading
 import urllib
+import sys
 
+PARENT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))
+sys.path.append(PARENT_DIR)
+
+from ppicp import initialize
 
 PDB_URL_FTP = r'ftp://ftp.wwpdb.org/pub/pdb/data/biounit/coordinates/divided/'
 PDB_URL_FTP_ALT = r'ftp://ftp.wwpdb.org/pub/pdb/data/biounit/PDB/divided/'
 ALT_PDB_URL = r'http://www.rcsb.org/pdb/files/'
+
+LOGGER = initialize.init_logger(__name__)
 
 
 class PdbDownloader(threading.Thread):
@@ -34,7 +41,7 @@ class PdbDownloader(threading.Thread):
             pdb_id = self.queue.get()
             success = retrieve_pdb_bio_assembly_file(pdb_id, PDB_URL_FTP)
             if not success:     # retry to download the file
-                print('Re-trying to download file {}.'.format(pdb_id))
+                LOGGER.warning('Re-trying to download file %s.', pdb_id)
                 retrieve_pdb_bio_assembly_file(pdb_id, ALT_PDB_URL)
             self.queue.task_done()
 
@@ -64,7 +71,7 @@ def retrieve_pdb_bio_assembly_file(pdb_id, url):
         urllib.urlretrieve(url, archive)
 
         # Show status message
-        print("Retrieving PDB file: {}".format(pdb_code))
+        LOGGER.info("Retrieving PDB file: %s", pdb_code)
 
         # Uncompress the archive and delete it when done
         zip_file = gzip.open(archive, 'rb')
@@ -74,7 +81,7 @@ def retrieve_pdb_bio_assembly_file(pdb_id, url):
         os.remove(archive)
         return True
     except (IOError, urllib.ContentTooShortError) as err:
-        print('{}\nUnable to download file {}.'.format(err, pdb_id))
+        LOGGER.error('%s \nUnable to download file %s.', err, pdb_id)
         return False
 
 

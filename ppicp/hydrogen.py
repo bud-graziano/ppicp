@@ -19,6 +19,9 @@ from ppicp import config
 from ppicp import initialize
 
 
+LOGGER = initialize.init_logger(__name__)
+
+
 def calc_hydrogen(pdb_path, out_dir):
     """
     Calculates hydrogen atoms for a given PDB file and saves the added hydrogen atoms to a new PDB
@@ -28,15 +31,19 @@ def calc_hydrogen(pdb_path, out_dir):
     :param out_dir: Where the resulting files are saved.
     :return: True if successful, False otherwise.
     """
+    LOGGER.info("[HYDROGEN] Working on: %s", pdb_path)
     if platform.system() == 'Windows':
         raise NotImplementedError
     elif platform.system() == 'Linux':
         if config.get_hydrogen_app(initialize.CONF_FILE) == 'reduce':
+            LOGGER.debug('Using Reduce to re-calculate hydrogen atoms.')
             try:
+                LOGGER.debug('Stripping hydrogen atoms for %s', pdb_path)
                 with open(out_dir + 'stripped', 'w') as out:
                     out.write(subprocess.check_output([os.path.join(initialize.BIN_DIR, 'reduce'),
                                                        '-Trim', '-Quiet', pdb_path]))
 
+                LOGGER.debug('Re-adding hydrogen atoms for %s', pdb_path)
                 with open(out_dir, 'w') as out:
                     subprocess.call([os.path.join(initialize.BIN_DIR, 'reduce'), '-build', '-DB',
                                      os.path.join(initialize.BIN_DIR, 'reduce_wwPDB_het_dict.txt'),
@@ -46,16 +53,17 @@ def calc_hydrogen(pdb_path, out_dir):
                 os.remove(out_dir + 'stripped')
                 return True
             except (OSError, subprocess.CalledProcessError) as err:
-                print('{}\nHydrogen calculations failed.'.format(err))
+                LOGGER.error('%s \nHydrogen calculations failed.', err)
                 return False
         else:
+            LOGGER.debug('Using user-specified application.')
             hydrogen_app = config.get_hydrogen_app(initialize.CONF_FILE)
             try:
-                print subprocess.check_output([hydrogen_app])
+                LOGGER.debug(subprocess.check_output([hydrogen_app]))
                 return True
             except (OSError, subprocess.CalledProcessError) as err:
-                print('{}\nHydrogen calculations failed.'.format(err))
+                LOGGER.error('%s \nHydrogen calculations failed.', err)
                 return False
     else:
-        print("[ERROR] OS could not be determined.")
+        LOGGER.critical("[ERROR] OS could not be determined.")
         sys.exit(1)

@@ -30,6 +30,8 @@ import shutil
 import time
 import sys
 
+import clint.textui as clt
+
 PARENT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))
 sys.path.append(PARENT_DIR)
 
@@ -90,87 +92,133 @@ def main():
     Run the CLI.
     """
 
+    initialize.conf()
+
     start_time = time.time()
+    clt.puts(clt.colored.green('Starting the pipeline. {} \n'.format(time.asctime(
+        time.localtime(start_time)))))
+
+    logger = initialize.init_logger(__name__)
+    logger.info('Starting the pipeline.')
 
     # Create the standard config file and remember where it is stored.
-    initialize.conf()
+    logger.debug('Initialization.')
     conf_path = initialize.CONF_FILE
 
     # Remember the path from where the script is called.
     cwd = os.path.abspath(os.getcwd())
 
     # Parse arguments
+    logger.debug('Parsing arguments.')
     args = parse_args(create_parser())
+    logger.debug('Supplied arguments are: %s', args)
 
     # Get the input and output directories.
     in_dir = args.input[0]
+    logger.debug('Input directory set as: %s', in_dir)
+
     out_dir = args.output[0]
+    logger.debug('Output directory set as: %s', out_dir)
 
     # If no arguments are given, run the complete pipeline.
     if not (args.pdb or args.models2chains or args.hydrogen or args.dssp or args.motifs or
             args.statistics or args.planarity or args.ppi is not None):
 
+        logger.info('Starting complete run through the pipeline.')
+
         # Create the output directory structure.
         out_subdirs = initialize.init_output_dir(out_dir)
+        logger.debug('Creating sub-directory structure. %s', out_subdirs)
 
         # First get the input files (.pdbids). This can be multiple files.
+        logger.debug('Collecting PDB-IDs.')
+        clt.puts(clt.colored.cyan('\nPDB'))
+
         input_files = [f for f in os.listdir(in_dir)]
         pdb_ids = []
+
         # Get the PDB IDs from all .pdbids files.
+        print 'Collecting PDB-IDs'
         for pdb_list_file in input_files:
             if initialize.is_valid_input_file(os.path.join(in_dir, pdb_list_file)):
                 pdb_ids += (utilities.get_pdb_ids_from_file(os.path.join(in_dir, pdb_list_file)))
 
         # Download the PDB files into the pdb subdirectory.
         os.chdir(out_subdirs['pdb'])
+        logger.info('Start downloading PDB files.')
+        print 'Start downloading PDB files'
+
         rcsb_pdb.pdb_download(pdb_ids, config.get_num_pdb_dl_threads(conf_path))
 
         # Copy the files into the mod_pdb directory. Later, for the PPI calculation, we need all
         # files in the mod_pdb subdir.
         # Since we have to change all PDB files (adding hydrogen atoms), we copy all PDB files over
         # into the mod_pdb subdir and change them inplace there.
+        logger.debug('Copying PDB files into the %s sub-directory.', (out_subdirs['pdb']))
+
         for files in os.listdir(out_subdirs['pdb']):
             shutil.copy(files, out_subdirs['ppi_results'])
 
         # Convert models to chains and calculate hydrogen atoms. PDB files will be changed inplace.
+        clt.puts(clt.colored.cyan('\nModels to Chains and Hydrogen Atoms'))
+
         os.chdir(out_subdirs['ppi_results'])
-        for index in pdb_ids:
+
+        logger.info('Start converting models to chains and re-calculating hydrogen atoms.')
+        print 'Start converting models to chains and re-calculating hydrogen atoms.'
+        for index in clt.progress.bar(pdb_ids):
             plcc.pdb_models_to_chains(index.lower(), os.path.join(out_subdirs['ppi_results'],
                                                                   index.lower() + '.pdb'))
             hydrogen.calc_hydrogen(index.lower() + '.pdb', os.path.join(out_subdirs['ppi_results'],
                                                                         index.lower() + '.pdb'))
 
         # Get the list of all PDB files including the modified.
+        logger.debug('Get a list of all PDB files in %s', (out_subdirs['ppi_results']))
         pdb_files = []
         for pdb_file in os.listdir(out_subdirs['ppi_results']):
             if initialize.is_pdb_file(os.path.join(out_subdirs['ppi_results'], pdb_file)):
                 pdb_files.append(pdb_file)
 
         # Download DSSP files.
+        clt.puts(clt.colored.cyan('\nDSSP'))
+        logger.info('Start downloading DSSP files.')
+        print 'Start downloading DSSP files'
         dssp.dssp_download(pdb_files, out_subdirs['ppi_results'],
                            config.get_num_dssp_dl_threads(conf_path))
 
         # Calculate PPIs for all PDB files in the mod_pdb subdir.
-        for index in pdb_ids:
+        clt.puts(clt.colored.cyan('\nPPI'))
+        logger.info('Start PPI calculations (without ligands).')
+        print 'Start PPI calculations (without ligands)'
+        for index in clt.progress.bar(pdb_ids):
             plcc.calculate_ppi(index.lower())
 
         # Detect motifs.
-        for fm_file in os.listdir(out_subdirs['ppi_results']):
+        clt.puts(clt.colored.cyan('\nMotifs'))
+        logger.info('Start motif detection.')
+        print 'Start motif detection'
+        for fm_file in clt.progress.bar(os.listdir(out_subdirs['ppi_results'])):
             if fm_file.endswith('.fanmod'):
                 for motif_size in xrange(3, 9):
+                    logger.debug('Detect motifs of size %d', motif_size)
                     motifs.calculate_motifs(motif_size,
                                             os.path.join(out_subdirs['ppi_results'], fm_file),
                                             os.path.join(out_subdirs['motif'], fm_file[:4]) +
                                             '_{}_fanmod'.format(motif_size))
 
         # Calculate statistics based on the PPI results.
+        clt.puts(clt.colored.cyan('\nStatistics'))
+
         num_pdb_files = 0
         edges_ppi = 0
         vertices_ppi = 0
         all_contacts = collections.Counter()
         all_aas = 0
         atom_contacts = {}
-        for files in os.listdir(out_subdirs['ppi_results']):
+
+        logger.info('Start compiling statistics.')
+        print 'Start compiling statistics'
+        for files in clt.progress.bar(os.listdir(out_subdirs['ppi_results'])):
             if files.endswith('.fanmod'):
                 edges_ppi += statistics.count_edges_in_ppi_aa_graph(
                     os.path.join(out_subdirs['ppi_results'], files))
@@ -189,6 +237,7 @@ def main():
                 num_pdb_files += 1
 
         # Create and save the charts.
+        logger.debug('Saving charts to %s.', (out_subdirs['imgs']))
         output_results.bar_chart_types_of_contacts(all_contacts, out_subdirs['imgs'])
         output_results.bar_chart_hydrogen(all_contacts, out_subdirs['imgs'])
         output_results.bar_chart_hydrogen_verbose(all_contacts, out_subdirs['imgs'])
@@ -198,6 +247,7 @@ def main():
         output_results.bar_chart_pi_effects_verbose(all_contacts, out_subdirs['imgs'])
 
         # Calculate statistics.
+        logger.debug('Calculating statistics.')
         end_time = time.time()
         runtime = (end_time - start_time) / 60
         all_atom_atom_contacts = statistics.amount_atom_contacts(all_contacts)
@@ -209,8 +259,9 @@ def main():
             avg_num_aas_contributing_per_graph = aas_contributing / num_pdb_files
             avg_atom_atom_per_edge = avg_num_edges_on_atom_level / avg_num_edges_in_graph
         except ZeroDivisionError as err:
-            print('{}\nEither the number of PDB files was zero or the average number of edges in a '
-                  'PPI AA graph was zero.'.format(err))
+            logger.warning('%s \nEither the number of PDB files was zero or the average number of '
+                           'edges in a PPI AA graph was zero.', err)
+
             if avg_num_edges_in_graph == 0:
                 avg_atom_atom_per_edge = -1
             else:
@@ -223,6 +274,7 @@ def main():
         num_contacts_per_atom = sorted(atom_contacts.items(), key=lambda x: x[1], reverse=True)
 
         # Save everything in the output HTML file.
+        logger.info('Save statistics results as HTML in %s', out_dir)
         output_results.html_wrapper(out_subdirs['statistic'],
                                     time.asctime(time.localtime(end_time)),
                                     num_pdb_files,
@@ -243,75 +295,129 @@ def main():
     out_dir = initialize.check_output_path(out_dir)
     # Download PDB files.
     if args.pdb:
+        logger.debug('Collecting PDB-IDs.')
+        clt.puts(clt.colored.cyan('\nPDB'))
+
         input_files = [f for f in os.listdir(in_dir)]
         pdb_ids = []
+
+        # Get the PDB IDs from all .pdbids files.
+        print 'Collecting PDB-IDs'
         for pdb_list_file in input_files:
             if initialize.is_valid_input_file(os.path.join(in_dir, pdb_list_file)):
                 pdb_ids += (utilities.get_pdb_ids_from_file(os.path.join(in_dir, pdb_list_file)))
 
         os.chdir(out_dir)
+
+        # Download the PDB files.
+        logger.info('Start downloading PDB files.')
+        print 'Start downloading PDB files'
+
         rcsb_pdb.pdb_download(pdb_ids, config.get_num_pdb_dl_threads(conf_path))
         os.chdir(cwd)
 
     # Convert Models in PDB files to chains.
     if args.models2chains:
+        clt.puts(clt.colored.cyan('\nModels to Chains'))
+
         input_files = [f for f in os.listdir(in_dir)]
         pdb_ids = []
+
+        logger.debug('Collect input files (PDB) for models to chains conversion.')
+        print 'Collecting input files (PDB)'
         for pdb_id in input_files:
             if initialize.is_pdb_file(os.path.join(in_dir, pdb_id)):
                 pdb_ids.append(pdb_id)
 
         os.chdir(in_dir)
-        for index in pdb_ids:
+
+        logger.info('Start converting models to chains.')
+        print 'Start converting models to chains'
+        for index in clt.progress.bar(pdb_ids):
             plcc.pdb_models_to_chains(index, os.path.join(out_dir, index))
         os.chdir(cwd)
 
     # Add hydrogen atoms to the PDB file.
     if args.hydrogen:
+        clt.puts(clt.colored.cyan('\nHydrogen Atoms'))
+
         input_files = [f for f in os.listdir(in_dir)]
         pdb_ids = []
+
+        logger.debug('Collect input files (PDB) for hydrogen calculations.')
+        print 'Collecting input files (PDB)'
         for pdb_id in input_files:
             if initialize.is_pdb_file(os.path.join(in_dir, pdb_id)):
                 pdb_ids.append(pdb_id)
 
         os.chdir(in_dir)
-        for index in pdb_ids:
+
+        logger.info('Start re-calculating hydrogen atoms.')
+        print 'Start re-calculating hydrogen atoms'
+        for index in clt.progress.bar(pdb_ids):
             hydrogen.calc_hydrogen(index, os.path.join(out_dir, index))
         os.chdir(cwd)
 
     # Download DSSP files.
     if args.dssp:
+        clt.puts(clt.colored.cyan('\nDSSP'))
+
         input_files = [f for f in os.listdir(in_dir)]
         pdb_ids = []
+
+        logger.debug('Collect input files (PDB) for DSSP calculations.')
+        print 'Collecting input files (PDB)'
         for pdb_id in input_files:
             if initialize.is_pdb_file(os.path.join(in_dir, pdb_id)):
                 pdb_ids.append(pdb_id)
 
         os.chdir(in_dir)
+
+        logger.info('Start downloading DSSP files.')
+        print 'Start downloading DSSP files'
         dssp.dssp_download(pdb_ids, out_dir, config.get_num_dssp_dl_threads(initialize.CONF_FILE))
         os.chdir(cwd)
 
     if args.ppi == 'all':
+        clt.puts(clt.colored.cyan('\nPPI'))
+
         input_files = [f for f in os.listdir(in_dir)]
         pdb_ids = []
+
+        logger.debug('Collect input files (PDB, DSSP) for PPI calculations.')
+        print 'Collecting input files (PDB, DSSP)'
         for pdb_id in input_files:
             if initialize.is_pdb_file(os.path.join(in_dir, pdb_id)):
                 pdb_ids.append(pdb_id)
+
         os.chdir(in_dir)
-        for index in pdb_ids:
+
+        logger.info('Start PPI calculations (without ligands).')
+        print 'Start PPI calculations (without ligands)'
+        for index in clt.progress.bar(pdb_ids):
             plcc.calculate_ppi(index)
         for files in os.listdir(in_dir):
             if files.endswith(('.gml', '.stats', '.fanmod', '.id', '.csv', '.py')) \
                     and in_dir != out_dir:
                 shutil.move(files, out_dir)
         os.chdir(cwd)
+
     elif args.ppi == 'with-ligands':
+        clt.puts(clt.colored.cyan('\nPPI'))
+
         input_files = [f for f in os.listdir(in_dir)]
         pdb_ids = []
+
+        logger.debug('Collect input files (PDB, DSSP) for PPI calculations (with ligands).')
+        print 'Collecting input files (PDB, DSSP)'
         for pdb_id in input_files:
             if initialize.is_pdb_file(os.path.join(in_dir, pdb_id)):
                 pdb_ids.append(pdb_id)
+
         os.chdir(in_dir)
+
+        logger.info('Start PPI calculations (with ligands).')
+        print 'Start PPI calculations (with ligands)'
         for index in pdb_ids:
             plcc.calculate_ppi_incl_ligands(index)
         for files in os.listdir(in_dir):
@@ -320,22 +426,32 @@ def main():
                 shutil.move(files, out_dir)
         os.chdir(cwd)
     elif args.ppi == 'no-pi-effects':
+        logger.info('Start PPI calculations (no pi-effects).')
         raise NotImplementedError
     elif args.ppi == 'ligands-no-pi-effects':
+        logger.info('Start PPI calculations (with ligands, no pi-effects).')
         raise NotImplementedError
 
     # Detect motifs.
     if args.motifs:
+        clt.puts(clt.colored.cyan('\nMotifs'))
+
         input_files = [f for f in os.listdir(in_dir)]
-        for fm_file in input_files:
+
+        logger.info('Start motif detection.')
+        print 'Start motif detection'
+        for fm_file in clt.progress.bar(input_files):
             if fm_file.endswith('.fanmod'):
                 for motif_size in xrange(3, 9):
+                    logger.debug('Detect motifs of size %d', motif_size)
                     motifs.calculate_motifs(motif_size,
                                             os.path.join(in_dir, fm_file),
                                             os.path.join(out_dir, fm_file[:4]) +
                                             '_{}_fanmod'.format(motif_size))
 
     if args.statistics:
+        clt.puts(clt.colored.cyan('\nStatistics'))
+
         input_files = [f for f in os.listdir(in_dir)]
         num_pdb_files = 0
         edges_ppi = 0
@@ -343,7 +459,10 @@ def main():
         all_contacts = collections.Counter()
         all_aas = 0
         atom_contacts = {}
-        for ppi_files in input_files:
+
+        logger.info('Start compiling statistics.')
+        print 'Start compiling statistics'
+        for ppi_files in clt.progress.bar(input_files):
             if ppi_files.endswith('.fanmod'):
                 edges_ppi += statistics.count_edges_in_ppi_aa_graph(os.path.join(in_dir, ppi_files))
                 vertices_ppi += statistics.count_vertices_in_ppi_aa_graph(os.path.join(in_dir,
@@ -363,6 +482,7 @@ def main():
         initialize.check_output_path(os.path.join(out_dir, 'imgs'))
 
         # Create and save the charts.
+        logger.debug('Saving charts to %s.', (os.path.join(out_dir, 'imgs')))
         output_results.bar_chart_types_of_contacts(all_contacts, os.path.join(out_dir, 'imgs'))
         output_results.bar_chart_hydrogen(all_contacts, os.path.join(out_dir, 'imgs'))
         output_results.bar_chart_hydrogen_verbose(all_contacts, os.path.join(out_dir, 'imgs'))
@@ -372,6 +492,7 @@ def main():
         output_results.bar_chart_pi_effects_verbose(all_contacts, os.path.join(out_dir, 'imgs'))
 
         # Calculate statistics.
+        logger.debug('Calculating statistics.')
         end_time = time.time()
         runtime = (end_time - start_time) / 60
         all_atom_atom_contacts = statistics.amount_atom_contacts(all_contacts)
@@ -383,8 +504,8 @@ def main():
             avg_num_aas_contributing_per_graph = aas_contributing / num_pdb_files
             avg_atom_atom_per_edge = avg_num_edges_on_atom_level / avg_num_edges_in_graph
         except ZeroDivisionError as err:
-            print('{}\nEither the number of PDB files was zero or the average number of edges in a '
-                  'PPI AA graph was zero.'.format(err))
+            logger.warning('%s \nEither the number of PDB files was zero or the average number of '
+                           'edges in a PPI AA graph was zero.', err)
             if avg_num_edges_in_graph == 0:
                 avg_atom_atom_per_edge = -1
             else:
@@ -397,6 +518,7 @@ def main():
         num_contacts_per_atom = sorted(atom_contacts.items(), key=lambda x: x[1], reverse=True)
 
         # Save everything in the output HTML file.
+        logger.info('Save statistics results as HTML in %s.', out_dir)
         output_results.html_wrapper(out_dir,
                                     time.asctime(time.localtime(end_time)),
                                     num_pdb_files,
@@ -412,6 +534,7 @@ def main():
                                     edges_ppi,
                                     num_contacts_per_atom)
     if args.planarity:
+        logger.info('Start planarity calculations.')
         raise NotImplementedError
 
 

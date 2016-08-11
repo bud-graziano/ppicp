@@ -8,14 +8,23 @@ Handles all the interaction with the DSSP server, i.e. calculating and downloadi
 """
 
 import json
+import os
 import Queue
 import threading
 import time
+import sys
 
 import requests
 
+PARENT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))
+sys.path.append(PARENT_DIR)
+
+from ppicp import initialize
+
 
 DSSP_API_URL = r'http://www.cmbi.ru.nl/xssp/'
+
+LOGGER = initialize.init_logger(__name__)
 
 
 class DsspDownloader(threading.Thread):
@@ -62,7 +71,7 @@ def pdb_to_dssp(pdb_id, rest_url, out_dir):
         req.raise_for_status()
 
         job_id = json.loads(req.text)['id']
-        print("Job {} submitted successfully. Id is: '{}'".format(pdb_id, job_id))
+        LOGGER.debug("Job %s submitted successfully. Id is: '%s'", pdb_id, job_id)
 
         # Loop until the job running on the server has finished, either successfully
         # or due to an error.
@@ -88,9 +97,10 @@ def pdb_to_dssp(pdb_id, rest_url, out_dir):
             # Otherwise, wait for five seconds and start at the beginning of the
             # loop again.
             if status == 'SUCCESS':
-                print("Job {} status is: {}".format(pdb_id, status))
+                LOGGER.info("Job %s status is: %s", pdb_id, status)
                 ready = True
             elif status in ['FAILURE', 'REVOKED']:
+                LOGGER.warning(json.loads(req.text)['message'])
                 raise Exception(json.loads(req.text)['message'])
             else:
                 time.sleep(5)
@@ -109,7 +119,7 @@ def pdb_to_dssp(pdb_id, rest_url, out_dir):
             # Return the result to the caller, which prints it to the screen.
             return ready
     except OSError as err:
-        print('{}\nMissing PDB file for {}'.format(err, pdb_id))
+        LOGGER.error('%s \nMissing PDB file for %s', err, pdb_id)
 
 
 def dssp_download(pdb_ids, out_dir, num_threads):

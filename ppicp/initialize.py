@@ -8,6 +8,7 @@ Initialize folder structures and the config file.
 Everything that is needed to run the actual application smoothly.
 """
 
+import logging
 import os
 import sys
 
@@ -28,6 +29,48 @@ def conf():
     """
     if not os.path.isfile(CONF_FILE):
         config.write_config(CONF_FILE)
+
+
+def init_logger(name=__name__):
+    """
+    Initialize the logger with values from the config file.
+
+    :param name: Name of the logger. Preferably, use __name__ when you call the function.
+    """
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.DEBUG)
+
+    lfh = logging.FileHandler(config.get_logging_dir(CONF_FILE))
+
+    logging_level = config.get_logging_level(CONF_FILE)
+
+    if logging_level == 'debug':
+        lfh.setLevel(logging.DEBUG)
+        formatter = logging.Formatter('%(asctime)s - %(name)-s:%(lineno)s, %(funcName)s '
+                                      '%(levelname)10s: %(message)s')
+    elif logging_level == 'info':
+        lfh.setLevel(logging.INFO)
+        formatter = logging.Formatter('%(levelname)s: %(message)s')
+    elif logging_level == 'warning':
+        lfh.setLevel(logging.WARNING)
+        formatter = logging.Formatter('%(levelname)s: %(message)s')
+    elif logging_level == 'error':
+        lfh.setLevel(logging.ERROR)
+        formatter = logging.Formatter('%(levelname)s: %(message)s')
+    elif logging_level == 'critical':
+        lfh.setLevel(logging.CRITICAL)
+        formatter = logging.Formatter('%(levelname)s: %(message)s')
+
+    lch = logging.StreamHandler()
+    lch.setLevel(logging.ERROR)
+
+    lfh.setFormatter(formatter)
+    lch.setFormatter(formatter)
+
+    logger.addHandler(lfh)
+    logger.addHandler(lch)
+
+    return logger
 
 
 def init_output_dir(out_dir):
@@ -125,3 +168,7 @@ def check_output_path(path):
         os.mkdir(path)
         print('Created new directory at \"{}\".'.format(path))
         return path
+
+
+# Make sure that the config file is created before anything else:
+conf()

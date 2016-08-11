@@ -25,6 +25,9 @@ from ppicp import initialize
 from ppicp import utilities
 
 
+LOGGER = initialize.init_logger(__name__)
+
+
 class PtglWorker(multiprocessing.Process):
     """
     Worker class that makes it possible to spawn multiple processes executing the plcc.jar code.
@@ -47,31 +50,31 @@ def calculate_ppi(pdb_path):
     :param pdb_path: PDB ID.
     :return: True if the calculation was successful, False otherwise.
     """
-    print("[PPI] Working on: {}".format(pdb_path))
+    LOGGER.info("[PPI] Working on: %s", pdb_path)
     if config.get_java_exec_path(initialize.CONF_FILE) is None:
         java_exec = utilities.get_jre_path()
     else:
         java_exec = config.get_java_exec_path(initialize.CONF_FILE)
     if platform.system() == 'Windows':
         try:
-            print subprocess.check_output([java_exec, '-jar',
-                                           initialize.BIN_DIR + '/plcc.jar',
-                                           pdb_path[:4], '--alt-aa-contacts'])
+            LOGGER.debug(subprocess.check_output([java_exec, '-jar',
+                                                  initialize.BIN_DIR + '/plcc.jar',
+                                                  pdb_path[:4], '--alt-aa-contacts']))
             return True
         except (WindowsError, subprocess.CalledProcessError) as err:
-            print('{}\nPPI calculations failed.'.format(err))
+            LOGGER.error('%s \nPPI calculations failed.', err)
             return False
     elif platform.system() == 'Linux':
         try:
-            print subprocess.check_output([java_exec.rstrip('\n'), '-jar',
-                                           os.path.join(initialize.BIN_DIR, 'plcc.jar'),
-                                           pdb_path[:4], '--alt-aa-contacts'])
+            LOGGER.debug(subprocess.check_output([java_exec.rstrip('\n'), '-jar',
+                                                  os.path.join(initialize.BIN_DIR, 'plcc.jar'),
+                                                  pdb_path[:4], '--alt-aa-contacts']))
             return True
         except (OSError, subprocess.CalledProcessError) as err:
-            print('{}\nPPI calculations failed.'.format(err))
+            LOGGER.error('%s \nPPI calculations failed.', err)
             return False
     else:
-        print("[ERROR] OS could not be determined.")
+        LOGGER.critical("[ERROR] OS could not be determined.")
         sys.exit(1)
 
 
@@ -83,31 +86,31 @@ def calculate_ppi_incl_ligands(pdb_path):
     :param pdb_path: PDB ID.
     :return: True if the calculation was successful, False otherwise.
     """
-    print("[PPI] Working on: {}".format(pdb_path))
+    LOGGER.info("[PPI] Working on: %s", pdb_path)
     if config.get_java_exec_path(initialize.CONF_FILE) is None:
         java_exec = utilities.get_jre_path()
     else:
         java_exec = config.get_java_exec_path(initialize.CONF_FILE)
     if platform.system() == 'Windows':
         try:
-            print subprocess.check_output([java_exec, '-jar',
-                                           initialize.BIN_DIR + '/plcc.jar',
-                                           pdb_path[:4], '--alt-aa-contacts-ligands'])
+            LOGGER.debug(subprocess.check_output([java_exec, '-jar',
+                                                  initialize.BIN_DIR + '/plcc.jar',
+                                                  pdb_path[:4], '--alt-aa-contacts-ligands']))
             return True
         except (WindowsError, subprocess.CalledProcessError) as err:
-            print('{}\nPPI calculations failed.'.format(err))
+            LOGGER.error('%s \nPPI calculations failed.', err)
             return False
     elif platform.system() == 'Linux':
         try:
-            print subprocess.check_output([java_exec.rstrip('\n'), '-jar',
-                                           os.path.join(initialize.BIN_DIR, 'plcc.jar'),
-                                           pdb_path[:4], '--alt-aa-contacts-ligands'])
+            LOGGER.debug(subprocess.check_output([java_exec.rstrip('\n'), '-jar',
+                                                  os.path.join(initialize.BIN_DIR, 'plcc.jar'),
+                                                  pdb_path[:4], '--alt-aa-contacts-ligands']))
             return True
         except (OSError, subprocess.CalledProcessError) as err:
-            print('{}\nPPI calculations failed.'.format(err))
+            LOGGER.error('%s \nPPI calculations failed.', err)
             return False
     else:
-        print("[ERROR] OS could not be determined.")
+        LOGGER.critical("[ERROR] OS could not be determined.")
         sys.exit(1)
 
 
@@ -121,33 +124,33 @@ def pdb_models_to_chains(pdb_path, out_dir):
     :param pdb_path: PDB ID.
     :return: True if the calculation was successful, False otherwise.
     """
-    print("[MODELS2CHAINS] Working on: {}".format(pdb_path))
+    LOGGER.info("[MODELS2CHAINS] Working on: %s", pdb_path)
     if config.get_java_exec_path(initialize.CONF_FILE) is None:
         java_exec = utilities.get_jre_path()
     else:
         java_exec = config.get_java_exec_path(initialize.CONF_FILE)
     if platform.system() == 'Windows':
         try:
-            print subprocess.check_output([java_exec, '-jar',
-                                           initialize.BIN_DIR + '/plcc.jar',
-                                           pdb_path[:4],
-                                           '--convert-models-to-chains',
-                                           out_dir])
+            LOGGER.debug(subprocess.check_output([java_exec, '-jar',
+                                                  initialize.BIN_DIR + '/plcc.jar',
+                                                  pdb_path[:4],
+                                                  '--convert-models-to-chains',
+                                                  out_dir]))
             return True
         except (WindowsError, subprocess.CalledProcessError) as err:
-            print('{}\nSplitting calculations failed.'.format(err))
+            LOGGER.error('%s \nSplitting calculations failed.', err)
             return False
     elif platform.system() == 'Linux':
         try:
-            print subprocess.check_output([java_exec.rstrip('\n'), '-jar',
-                                           os.path.join(initialize.BIN_DIR, 'plcc.jar'),
-                                           pdb_path[:4],
-                                           '--convert-models-to-chains',
-                                           out_dir])
+            LOGGER.debug(subprocess.check_output([java_exec.rstrip('\n'), '-jar',
+                                                  os.path.join(initialize.BIN_DIR, 'plcc.jar'),
+                                                  pdb_path[:4],
+                                                  '--convert-models-to-chains',
+                                                  out_dir]))
             return True
         except (OSError, subprocess.CalledProcessError) as err:
-            print('{}\nSplitting calculations failed.'.format(err))
+            LOGGER.error('%s \nSplitting calculations failed.', err)
             return False
     else:
-        print("[ERROR] OS could not be determined.")
+        LOGGER.critical("[ERROR] OS could not be determined.")
         sys.exit(1)

@@ -8,6 +8,7 @@ Handles the config of the PPI Calculation Pipeline.
 
 import ConfigParser
 import datetime
+import os
 
 
 def write_config(out_path):
@@ -21,9 +22,11 @@ def write_config(out_path):
 
     config.add_section('java')
     config.set('java', '#executable_path', 'set/abspath/to/java/executable')
+
     config.add_section('io')
     config.set('io', 'num_pdb_download_threads', '2')
     config.set('io', 'num_dssp_download_threads', '5')
+
     config.add_section('fanmod')
     config.set('fanmod', '# = algorithm options', '')
     config.set('fanmod', '# number of samples used to determine approx. # of subgraphs', '[100000]')
@@ -58,6 +61,13 @@ def write_config(out_path):
     config.set('fanmod', 'outfile_format', '0')
     config.set('fanmod', '# create dumpfile? 1(yes)/0(no)', '[0]')
     config.set('fanmod', 'create_dumpfile', '1')
+
+    config.add_section('logging')
+    config.set('logging', 'log_directory', '~/ppicp.log')
+    config.set('logging', '# one of the following logging levels can be set: ',
+               'debug, info, warning, error, critical')
+    config.set('logging', 'logging_level', 'info')
+
     config.add_section('external')
     config.set('external', 'calc_hydrogens', 'reduce')
 
@@ -302,3 +312,36 @@ def get_fanmod_dumpfile(conf_path):
     config = ConfigParser.SafeConfigParser()
     config.read(conf_path)
     return config.get('fanmod', 'create_dumpfile')
+
+
+def get_logging_dir(conf_path):
+    """
+    Get the output directory to which the log file will be saved.
+
+    :param conf_path: Path to the config file.
+    :return:the path to the log file.
+    """
+    config = ConfigParser.SafeConfigParser()
+    config.read(conf_path)
+
+    logging_directory = config.get('logging', 'log_directory')
+    return logging_directory if not logging_directory.startswith('~') else os.path.expanduser(
+        logging_directory)
+
+
+def get_logging_level(conf_path):
+    """
+    Get the logging level which should be one of the following: debug, info, warning, error,
+    critical.
+
+    :param conf_path: Path to the config file.
+    :return: the logging level.
+    """
+    config = ConfigParser.SafeConfigParser()
+    config.read(conf_path)
+    logging_level = config.get('logging', 'logging_level')
+    if logging_level in ['debug', 'info', 'warning', 'error', 'critical']:
+        return logging_level
+    else:
+        raise ValueError('The supplied logging level must be one of the following: debug, info, '
+                         'warning, error, critical. Found {}.'.format(logging_level))

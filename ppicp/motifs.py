@@ -18,6 +18,8 @@ sys.path.append(PARENT_DIR)
 from ppicp import config
 from ppicp import initialize
 
+LOGGER = initialize.init_logger(__name__)
+
 
 def calculate_motifs(motif_size, in_file, out_file):
     """
@@ -71,8 +73,9 @@ def calculate_motifs(motif_size, in_file, out_file):
     :param out_file: Path to the output files.
     :return: True if successful, False otherwise.
     """
-
+    LOGGER.info('[MOTIF] Working on: %s and size %d}', in_file, motif_size)
     if not 2 < motif_size < 9:
+        LOGGER.warning('Motif size not between 3-8.')
         return False
 
     config_file = initialize.CONF_FILE
@@ -81,28 +84,30 @@ def calculate_motifs(motif_size, in_file, out_file):
         raise NotImplementedError
     elif platform.system() == 'Linux':
         try:
-            print subprocess.check_output([os.path.join(initialize.BIN_DIR, 'fanmod_linux'),
-                                           str(motif_size),
-                                           config.get_fanmod_num_samples(config_file),
-                                           config.get_fanmod_enum(config_file),
-                                           in_file,
-                                           config.get_fanmod_directed(config_file),
-                                           config.get_fanmod_colored_vertices(config_file),
-                                           config.get_fanmod_colored_edges(config_file),
-                                           config.get_fanmod_random_type(config_file),
-                                           config.get_fanmod_regard_vert_color(config_file),
-                                           config.get_fanmod_regard_edg_color(config_file),
-                                           config.get_fanmod_reestimate(config_file),
-                                           config.get_fanmod_num_rand_networks(config_file),
-                                           config.get_fanmod_num_exchanges_per_edge(config_file),
-                                           config.get_fanmod_num_exchange_attempts(config_file),
-                                           out_file,
-                                           config.get_fanmod_outfile_format(config_file),
-                                           config.get_fanmod_dumpfile(config_file)])
+            LOGGER.debug(subprocess.check_output([os.path.join(initialize.BIN_DIR, 'fanmod_linux'),
+                                                  str(motif_size),
+                                                  config.get_fanmod_num_samples(config_file),
+                                                  config.get_fanmod_enum(config_file),
+                                                  in_file,
+                                                  config.get_fanmod_directed(config_file),
+                                                  config.get_fanmod_colored_vertices(config_file),
+                                                  config.get_fanmod_colored_edges(config_file),
+                                                  config.get_fanmod_random_type(config_file),
+                                                  config.get_fanmod_regard_vert_color(config_file),
+                                                  config.get_fanmod_regard_edg_color(config_file),
+                                                  config.get_fanmod_reestimate(config_file),
+                                                  config.get_fanmod_num_rand_networks(config_file),
+                                                  config.get_fanmod_num_exchanges_per_edge(
+                                                      config_file),
+                                                  config.get_fanmod_num_exchange_attempts(
+                                                      config_file),
+                                                  out_file,
+                                                  config.get_fanmod_outfile_format(config_file),
+                                                  config.get_fanmod_dumpfile(config_file)]))
             return True
         except (OSError, subprocess.CalledProcessError) as err:
-            print('{}\nMotif calculation failed.'.format(err))
+            LOGGER.error('%s \nMotif calculation failed.', err)
             return False
     else:
-        print('[ERROR] OS could not be determinded.')
+        LOGGER.critical('[ERROR] OS could not be determinded.')
         sys.exit(1)

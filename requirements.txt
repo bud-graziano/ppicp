@@ -1,10 +1,12 @@
 alabaster==0.7.9
 argh==0.26.2
+args==0.1.0
 astroid==1.4.8
 Babel==2.3.4
 backports-abc==0.4
 backports.functools-lru-cache==1.2.1
 certifi==2016.8.8
+clint==0.5.1
 colorama==0.3.7
 configparser==3.5.0
 docutils==0.12
