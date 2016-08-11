@@ -9,8 +9,12 @@ Everything that is needed to run the actual application smoothly.
 """
 
 import os
+import sys
 
-import config
+PARENT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))
+sys.path.append(PARENT_DIR)
+
+from ppicp import config
 
 
 CONF_FILE = os.path.expanduser('~') + '/.ppicp_settings'

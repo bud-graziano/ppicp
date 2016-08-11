@@ -12,8 +12,11 @@ import platform
 import subprocess
 import sys
 
-import config
-import initialize
+PARENT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))
+sys.path.append(PARENT_DIR)
+
+from ppicp import config
+from ppicp import initialize
 
 
 def calculate_motifs(motif_size, in_file, out_file):

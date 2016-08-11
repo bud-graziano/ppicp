@@ -22,22 +22,27 @@ ppicp.cli
 
 from __future__ import division
 
+
 import argparse
 import collections
 import os
 import shutil
 import time
+import sys
 
-import config
-import dssp
-import hydrogen
-import initialize
-import motifs
-import output_results
-import rcsb_pdb
-import plcc
-import statistics
-import utilities
+PARENT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir))
+sys.path.append(PARENT_DIR)
+
+from ppicp import config
+from ppicp import dssp
+from ppicp import hydrogen
+from ppicp import initialize
+from ppicp import motifs
+from ppicp import output_results
+from ppicp import rcsb_pdb
+from ppicp import plcc
+from ppicp import statistics
+from ppicp import utilities
 
 
 def create_parser():
