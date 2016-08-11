@@ -319,7 +319,7 @@ def get_logging_dir(conf_path):
     Get the output directory to which the log file will be saved.
 
     :param conf_path: Path to the config file.
-    :return:the path to the log file.
+    :return: the path to the log file.
     """
     config = ConfigParser.SafeConfigParser()
     config.read(conf_path)

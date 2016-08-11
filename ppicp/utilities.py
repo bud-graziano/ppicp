@@ -68,3 +68,13 @@ def get_jre_path():
         if jre is not None:
             return jre
     raise OSError(errno.ENOENT, os.strerror(errno.ENOENT, 'java.exe'))
+
+
+def is_empty_file(path_to_file):
+    """
+    Checks whether a file is empty or not based on its size.
+
+    :param path_to_file: Path to the file that should be checked.
+    :return: True if empty, False otherwise.
+    """
+    return bool(os.stat(path_to_file).st_size == 0)
