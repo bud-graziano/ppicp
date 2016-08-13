@@ -64,6 +64,9 @@ def write_config(out_path):
 
     config.add_section('logging')
     config.set('logging', 'log_directory', '~/ppicp.log')
+    config.set('logging', 'plcc_log_directory', '~/plcc_ppicp.log')
+    config.set('logging', 'hydrogen_log_directory', '~/hydrogen_ppicp.log')
+    config.set('logging', 'motif_log_directory', '~/motif_ppicp.log')
     config.set('logging', '# one of the following logging levels can be set: ',
                'debug, info, warning, error, critical')
     config.set('logging', 'logging_level', 'info')
@@ -325,6 +328,51 @@ def get_logging_dir(conf_path):
     config.read(conf_path)
 
     logging_directory = config.get('logging', 'log_directory')
+    return logging_directory if not logging_directory.startswith('~') else os.path.expanduser(
+        logging_directory)
+
+
+def get_plcc_logging_dir(conf_path):
+    """
+    Get the output directory to which the log file, storing the ``plcc.jar`` stderr, will be saved.
+
+    :param conf_path: Path to the config file.
+    :return: the path to the log file.
+    """
+    config = ConfigParser.SafeConfigParser()
+    config.read(conf_path)
+
+    logging_directory = config.get('logging', 'plcc_log_directory')
+    return logging_directory if not logging_directory.startswith('~') else os.path.expanduser(
+        logging_directory)
+
+
+def get_hydrogen_logging_dir(conf_path):
+    """
+    Get the output directory to which the log file, storing the ``reduce`` stderr, will be saved.
+
+    :param conf_path: Path to the config file.
+    :return: the path to the log file.
+    """
+    config = ConfigParser.SafeConfigParser()
+    config.read(conf_path)
+
+    logging_directory = config.get('logging', 'hydrogen_log_directory')
+    return logging_directory if not logging_directory.startswith('~') else os.path.expanduser(
+        logging_directory)
+
+
+def get_motif_logging_dir(conf_path):
+    """
+    Get the output directory to which the log file, storing the ``fanmod`` stderr, will be saved.
+
+    :param conf_path: Path to the config file.
+    :return: the path to the log file.
+    """
+    config = ConfigParser.SafeConfigParser()
+    config.read(conf_path)
+
+    logging_directory = config.get('logging', 'motif_log_directory')
     return logging_directory if not logging_directory.startswith('~') else os.path.expanduser(
         logging_directory)
 

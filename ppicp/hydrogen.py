@@ -20,6 +20,7 @@ from ppicp import initialize
 
 
 LOGGER = initialize.init_logger(__name__)
+LOGGER_HYD = initialize.init_hyd_logger(__name__)
 
 
 def calc_hydrogen(pdb_path, out_dir):
@@ -39,18 +40,42 @@ def calc_hydrogen(pdb_path, out_dir):
             LOGGER.debug('Using Reduce to re-calculate hydrogen atoms.')
             try:
                 LOGGER.debug('Stripping hydrogen atoms for %s', pdb_path)
+                command = [os.path.join(initialize.BIN_DIR, 'reduce'), '-Trim', '-Quiet', pdb_path]
+                subp = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+                stdout, stderr = subp.communicate()
+
                 with open(out_dir + 'stripped', 'w') as out:
-                    out.write(subprocess.check_output([os.path.join(initialize.BIN_DIR, 'reduce'),
-                                                       '-Trim', '-Quiet', pdb_path]))
+                    out.write(stdout)
+
+                if stderr != '':
+                    LOGGER.debug(stderr)
+                LOGGER_HYD.error('{%s}\n %s', pdb_path, stderr)
+
+                retcode = subp.poll()
+                if retcode:
+                    cmd = command
+                    raise subprocess.CalledProcessError(retcode, cmd, output=stdout)
 
                 LOGGER.debug('Re-adding hydrogen atoms for %s', pdb_path)
+                command = [os.path.join(initialize.BIN_DIR, 'reduce'), '-build', '-DB',
+                           os.path.join(initialize.BIN_DIR, 'reduce_wwPDB_het_dict.txt'),
+                           '-Quiet', out_dir + 'stripped']
+
+                subp = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+                stdout, stderr = subp.communicate()
+
                 with open(out_dir, 'w') as out:
-                    subprocess.call([os.path.join(initialize.BIN_DIR, 'reduce'), '-build', '-DB',
-                                     os.path.join(initialize.BIN_DIR, 'reduce_wwPDB_het_dict.txt'),
-                                     '-Quiet', out_dir + 'stripped'], stdout=out)
+                    out.write(stdout)
+
+                if stderr != '':
+                    LOGGER.debug(stderr)
+                LOGGER_HYD.error('{%s}\n %s', pdb_path, stderr)
 
                 # Get rid of the overhead.
                 os.remove(out_dir + 'stripped')
+
                 return True
             except (OSError, subprocess.CalledProcessError) as err:
                 LOGGER.error('%s \nHydrogen calculations failed.', err)

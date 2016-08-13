@@ -20,6 +20,7 @@ from ppicp import initialize
 from ppicp import utilities
 
 LOGGER = initialize.init_logger(__name__)
+LOGGER_MOTIF = initialize.init_motif_logger(__name__)
 
 
 def calculate_motifs(motif_size, in_file, out_file):
@@ -85,26 +86,40 @@ def calculate_motifs(motif_size, in_file, out_file):
         raise NotImplementedError
     elif platform.system() == 'Linux':
         try:
-            LOGGER.debug(subprocess.check_output([os.path.join(initialize.BIN_DIR, 'fanmod_linux'),
-                                                  str(motif_size),
-                                                  config.get_fanmod_num_samples(config_file),
-                                                  config.get_fanmod_enum(config_file),
-                                                  in_file,
-                                                  config.get_fanmod_directed(config_file),
-                                                  config.get_fanmod_colored_vertices(config_file),
-                                                  config.get_fanmod_colored_edges(config_file),
-                                                  config.get_fanmod_random_type(config_file),
-                                                  config.get_fanmod_regard_vert_color(config_file),
-                                                  config.get_fanmod_regard_edg_color(config_file),
-                                                  config.get_fanmod_reestimate(config_file),
-                                                  config.get_fanmod_num_rand_networks(config_file),
-                                                  config.get_fanmod_num_exchanges_per_edge(
-                                                      config_file),
-                                                  config.get_fanmod_num_exchange_attempts(
-                                                      config_file),
-                                                  out_file,
-                                                  config.get_fanmod_outfile_format(config_file),
-                                                  config.get_fanmod_dumpfile(config_file)]))
+            command = [os.path.join(initialize.BIN_DIR, 'fanmod_linux'),
+                       str(motif_size),
+                       config.get_fanmod_num_samples(config_file),
+                       config.get_fanmod_enum(config_file),
+                       in_file,
+                       config.get_fanmod_directed(config_file),
+                       config.get_fanmod_colored_vertices(config_file),
+                       config.get_fanmod_colored_edges(config_file),
+                       config.get_fanmod_random_type(config_file),
+                       config.get_fanmod_regard_vert_color(config_file),
+                       config.get_fanmod_regard_edg_color(config_file),
+                       config.get_fanmod_reestimate(config_file),
+                       config.get_fanmod_num_rand_networks(config_file),
+                       config.get_fanmod_num_exchanges_per_edge(config_file),
+                       config.get_fanmod_num_exchange_attempts(config_file),
+                       out_file,
+                       config.get_fanmod_outfile_format(config_file),
+                       config.get_fanmod_dumpfile(config_file)]
+            subp = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+            stdout, stderr = subp.communicate()
+
+            if stdout != '':
+                LOGGER.debug(stdout)
+            if stderr != '':
+                LOGGER.debug(stderr)
+            LOGGER_MOTIF.error('{%s|%d}\n %s', in_file, motif_size, stderr)
+
+            retcode = subp.poll()
+            if retcode:
+                cmd = command
+                raise subprocess.CalledProcessError(retcode, cmd, output=stdout)
+
+
             return True
         except (OSError, subprocess.CalledProcessError) as err:
             LOGGER.error('%s \nMotif calculation failed.', err)

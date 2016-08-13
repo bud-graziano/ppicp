@@ -26,6 +26,7 @@ from ppicp import utilities
 
 
 LOGGER = initialize.init_logger(__name__)
+LOGGER_PLCC = initialize.init_plcc_logger(__name__)
 
 
 class PtglWorker(multiprocessing.Process):
@@ -57,18 +58,43 @@ def calculate_ppi(pdb_path):
         java_exec = config.get_java_exec_path(initialize.CONF_FILE)
     if platform.system() == 'Windows':
         try:
-            LOGGER.debug(subprocess.check_output([java_exec, '-jar',
-                                                  initialize.BIN_DIR + '/plcc.jar',
-                                                  pdb_path[:4], '--alt-aa-contacts']))
+            command = [java_exec, '-jar', initialize.BIN_DIR + '/plcc.jar', pdb_path[:4],
+                       '--alt-aa-contacts']
+            subp = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+            stdout, stderr = subp.communicate()
+            LOGGER.debug(stdout)
+
+            if stderr != '':
+                LOGGER.debug(stderr)
+            LOGGER_PLCC.error(stderr)
+
+            retcode = subp.poll()
+            if retcode:
+                cmd = command
+                raise subprocess.CalledProcessError(retcode, cmd, output=stdout)
+
             return True
         except (WindowsError, subprocess.CalledProcessError) as err:
             LOGGER.error('%s \nPPI calculations failed.', err)
             return False
     elif platform.system() == 'Linux':
         try:
-            LOGGER.debug(subprocess.check_output([java_exec.rstrip('\n'), '-jar',
-                                                  os.path.join(initialize.BIN_DIR, 'plcc.jar'),
-                                                  pdb_path[:4], '--alt-aa-contacts']))
+            command = [java_exec.rstrip('\n'), '-jar', os.path.join(initialize.BIN_DIR, 'plcc.jar'),
+                       pdb_path[:4], '--alt-aa-contacts']
+            subp = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+            stdout, stderr = subp.communicate()
+            LOGGER.debug(stdout)
+            if stderr != '':
+                LOGGER.debug(stderr)
+            LOGGER_PLCC.error('{%s}\n %s', pdb_path, stderr)
+
+            retcode = subp.poll()
+            if retcode:
+                cmd = command
+                raise subprocess.CalledProcessError(retcode, cmd, output=stdout)
+
             return True
         except (OSError, subprocess.CalledProcessError) as err:
             LOGGER.error('%s \nPPI calculations failed.', err)
@@ -93,18 +119,43 @@ def calculate_ppi_incl_ligands(pdb_path):
         java_exec = config.get_java_exec_path(initialize.CONF_FILE)
     if platform.system() == 'Windows':
         try:
-            LOGGER.debug(subprocess.check_output([java_exec, '-jar',
-                                                  initialize.BIN_DIR + '/plcc.jar',
-                                                  pdb_path[:4], '--alt-aa-contacts-ligands']))
+            command = [java_exec, '-jar', initialize.BIN_DIR + '/plcc.jar', pdb_path[:4],
+                       '--alt-aa-contacts-ligands']
+            subp = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+            stdout, stderr = subp.communicate()
+            LOGGER.debug(stdout)
+            if stderr != '':
+                LOGGER.debug(stderr)
+            LOGGER_PLCC.error('{%s}\n %s', pdb_path, stderr)
+
+            retcode = subp.poll()
+            if retcode:
+                cmd = command
+                raise subprocess.CalledProcessError(retcode, cmd, output=stdout)
+
             return True
         except (WindowsError, subprocess.CalledProcessError) as err:
             LOGGER.error('%s \nPPI calculations failed.', err)
             return False
     elif platform.system() == 'Linux':
         try:
-            LOGGER.debug(subprocess.check_output([java_exec.rstrip('\n'), '-jar',
-                                                  os.path.join(initialize.BIN_DIR, 'plcc.jar'),
-                                                  pdb_path[:4], '--alt-aa-contacts-ligands']))
+            command = [java_exec.rstrip('\n'), '-jar', os.path.join(initialize.BIN_DIR, 'plcc.jar'),
+                       pdb_path[:4], '--alt-aa-contacts-ligands']
+
+            subp = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+            stdout, stderr = subp.communicate()
+            LOGGER.debug(stdout)
+            if stderr != '':
+                LOGGER.debug(stderr)
+            LOGGER_PLCC.error(stderr)
+
+            retcode = subp.poll()
+            if retcode:
+                cmd = command
+                raise subprocess.CalledProcessError(retcode, cmd, output=stdout)
+
             return True
         except (OSError, subprocess.CalledProcessError) as err:
             LOGGER.error('%s \nPPI calculations failed.', err)
@@ -131,22 +182,42 @@ def pdb_models_to_chains(pdb_path, out_dir):
         java_exec = config.get_java_exec_path(initialize.CONF_FILE)
     if platform.system() == 'Windows':
         try:
-            LOGGER.debug(subprocess.check_output([java_exec, '-jar',
-                                                  initialize.BIN_DIR + '/plcc.jar',
-                                                  pdb_path[:4],
-                                                  '--convert-models-to-chains',
-                                                  out_dir]))
+            command = [java_exec, '-jar', initialize.BIN_DIR + '/plcc.jar', pdb_path[:4],
+                       '--convert-models-to-chains', out_dir]
+            subp = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+            stdout, stderr = subp.communicate()
+            LOGGER.debug(stdout)
+            if stderr != '':
+                LOGGER.debug(stderr)
+            LOGGER_PLCC.error(stderr)
+
+            retcode = subp.poll()
+            if retcode:
+                cmd = command
+                raise subprocess.CalledProcessError(retcode, cmd, output=stdout)
+
             return True
         except (WindowsError, subprocess.CalledProcessError) as err:
             LOGGER.error('%s \nSplitting calculations failed.', err)
             return False
     elif platform.system() == 'Linux':
         try:
-            LOGGER.debug(subprocess.check_output([java_exec.rstrip('\n'), '-jar',
-                                                  os.path.join(initialize.BIN_DIR, 'plcc.jar'),
-                                                  pdb_path[:4],
-                                                  '--convert-models-to-chains',
-                                                  out_dir]))
+            command = [java_exec.rstrip('\n'), '-jar', os.path.join(initialize.BIN_DIR, 'plcc.jar'),
+                       pdb_path[:4], '--convert-models-to-chains', out_dir]
+            subp = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+            stdout, stderr = subp.communicate()
+            LOGGER.debug(stdout)
+            if stderr != '':
+                LOGGER.debug(stderr)
+            LOGGER_PLCC.error(stderr)
+
+            retcode = subp.poll()
+            if retcode:
+                cmd = command
+                raise subprocess.CalledProcessError(retcode, cmd, output=stdout)
+
             return True
         except (OSError, subprocess.CalledProcessError) as err:
             LOGGER.error('%s \nSplitting calculations failed.', err)

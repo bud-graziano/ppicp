@@ -35,7 +35,7 @@ def init_logger(name=__name__):
     """
     Initialize the logger with values from the config file.
 
-    :param name: Name of the logger. Preferably, use __name__ when you call the function.
+    :param name: Name of the logger. Preferably, use ``__name__`` when you call the function.
     """
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
@@ -70,6 +70,51 @@ def init_logger(name=__name__):
     logger.addHandler(lfh)
     logger.addHandler(lch)
 
+    return logger
+
+
+def init_hyd_logger(name=__name__):
+    """
+    Initialize the hydrogen logger (saving stderr from ``reduce``) with values from the config file.
+
+    :param name: Name of the logger. Preferably, use ``__name__`` when you call the function.
+    """
+    logger = logging.getLogger(name + '_hyd')
+    logger.setLevel(logging.DEBUG)
+    lfh = logging.FileHandler(config.get_hydrogen_logging_dir(CONF_FILE))
+    formatter = logging.Formatter('%(message)s')
+    lfh.setFormatter(formatter)
+    logger.addHandler(lfh)
+    return logger
+
+
+def init_plcc_logger(name=__name__):
+    """
+    Initialize the PLCC logger (saving stderr from ``plcc.jar``) with values from the config file.
+
+    :param name: Name of the logger. Preferably, use ``__name__`` when you call the function.
+    """
+    logger = logging.getLogger(name + '_plcc')
+    logger.setLevel(logging.DEBUG)
+    lfh = logging.FileHandler(config.get_plcc_logging_dir(CONF_FILE))
+    formatter = logging.Formatter('%(message)s')
+    lfh.setFormatter(formatter)
+    logger.addHandler(lfh)
+    return logger
+
+
+def init_motif_logger(name=__name__):
+    """
+    Initialize the motif logger (saving stderr from ``fanmod``) with values from the config file.
+
+    :param name: Name of the logger. Preferably, use ``__name__`` when you call the function.
+    """
+    logger = logging.getLogger(name + '_motif')
+    logger.setLevel(logging.DEBUG)
+    lfh = logging.FileHandler(config.get_motif_logging_dir(CONF_FILE))
+    formatter = logging.Formatter('%(message)s')
+    lfh.setFormatter(formatter)
+    logger.addHandler(lfh)
     return logger
 
 
