@@ -55,24 +55,53 @@ def create_parser():
     """
     cli_parser = argparse.ArgumentParser(description="PPICP -- Protein-Protein Interaction "
                                                      "Calculation Pipeline",
-                                         epilog="A scientific software for the calculation of "
-                                                "protein-protein interactions (PPIs).")
+                                         epilog="PPICP is a scientific software to calculate "
+                                                "protein-protein interactions from RCSB PDB data. "
+                                                "The pipeline includes the execution of the "
+                                                "following steps:\n1. Downloading of input data "
+                                                "based on a list of PDB-IDs.\n    a. Data "
+                                                "from RCSB PDB.\n    b. Data from DSSP.\n2. "
+                                                "Converting models in PDB files to separate chains."
+                                                "\n3. Removing existing hydrogen atoms and "
+                                                "re-adding them with the Reduce software.\n4. "
+                                                "Calculation of protein-protein interactions based "
+                                                "on graph-theoretical methods.\n5. Detection of "
+                                                "motifs in the calculated PPI-graphs with the "
+                                                "Fanmod software.\n6. Compiling of statistics "
+                                                "based on the PPI calculation output.",
+                                         formatter_class=argparse.RawDescriptionHelpFormatter)
 
     cli_parser.add_argument('input', type=lambda x: initialize.check_input_path(x, cli_parser),
-                            nargs=1, help="Path to a file listing PDB-IDs, to a PDB file, or to a "
-                                          "directory containing PDB files.")
+                            nargs=1, help="Path to a directory containing a '.pdbids' file that "
+                                          "stores PDB-IDs separated by new lines.")
 
     cli_parser.add_argument('output', type=lambda x: initialize.check_output_path(x), nargs=1,
                             help="Path to an output directory.")
-    cli_parser.add_argument('--ppi', '-p', choices=['all', 'with-ligands', 'no-pi-effects',
-                                                    'ligands-no-pi-effects'])
-    cli_parser.add_argument('--pdb', '-pdb', action='store_true')
-    cli_parser.add_argument('--dssp', '-d', action='store_true')
-    cli_parser.add_argument('--hydrogen', '-r', action='store_true')
-    cli_parser.add_argument('--models2chains', '-s', action='store_true')
-    cli_parser.add_argument('--motifs', '-m', action='store_true')
-    cli_parser.add_argument('--statistics', '-stats', action='store_true')
-    cli_parser.add_argument('--planarity', '-pln', action='store_true')
+    cli_parser.add_argument('--ppi', '-p',
+                            choices=['standard', 'with-ligands', 'no-pi-effects',
+                                     'ligands-no-pi-effects'],
+                            help="Calculate protein-protein interactions. Standard runs the PPI "
+                                 "calculation including pi-effects but without ligand contacts."
+                                 "'with-ligands' includes ligands in the PPI calculation. 'no-pi-"
+                                 "effects' excludes pi-effects from the PPI calculation. 'ligands-"
+                                 "no-pi-effects' includes ligands and excludes pi-effects. This "
+                                 "requires PDB and DSSP files.")
+    cli_parser.add_argument('--pdb', '-pdb', action='store_true',
+                            help="Download PDB files based on PDB-IDs from a '.pdbids' file.")
+    cli_parser.add_argument('--dssp', '-d', action='store_true',
+                            help="Download DSSP files based on PDB files.")
+    cli_parser.add_argument('--hydrogen', '-r', action='store_true',
+                            help="Re-calculate hydrogen atoms for given PDB files.")
+    cli_parser.add_argument('--models2chains', '-s', action='store_true',
+                            help="Convert models in PDB files to separate chains.")
+    cli_parser.add_argument('--motifs', '-m', action='store_true',
+                            help="Detect motifs of size 3-8 in the generated PPI-graphs. This "
+                                 "requires PPI calculations to be "
+                                 "already finished.")
+    cli_parser.add_argument('--statistics', '-stats', action='store_true',
+                            help="Compile statistics based on PPI and motif calculations.")
+    cli_parser.add_argument('--planarity', '-pln', action='store_true',
+                            help="Calculate the planarity for aromatic rings in PDB files.")
     return cli_parser
 
 
@@ -95,8 +124,8 @@ def main():
     initialize.conf()
 
     start_time = time.time()
-    clt.puts(clt.colored.green('Starting the pipeline. {} \n'.format(time.asctime(
-        time.localtime(start_time)))))
+    print (clt.colored.green('Starting the pipeline. {} \n'.format(time.asctime(
+        time.localtime(start_time))), bold=True))
 
     logger = initialize.init_logger(__name__)
     logger.info('Starting the pipeline.')
@@ -132,7 +161,7 @@ def main():
 
         # First get the input files (.pdbids). This can be multiple files.
         logger.debug('Collecting PDB-IDs.')
-        clt.puts(clt.colored.cyan('\nPDB'))
+        print (clt.colored.cyan('\nPDB'))
 
         input_files = [f for f in os.listdir(in_dir)]
         pdb_ids = []
@@ -160,7 +189,7 @@ def main():
             shutil.copy(files, out_subdirs['ppi_results'])
 
         # Convert models to chains and calculate hydrogen atoms. PDB files will be changed inplace.
-        clt.puts(clt.colored.cyan('\nModels to Chains and Hydrogen Atoms'))
+        print (clt.colored.cyan('\nModels to Chains and Hydrogen Atoms'))
 
         os.chdir(out_subdirs['ppi_results'])
 
@@ -180,14 +209,14 @@ def main():
                 pdb_files.append(pdb_file)
 
         # Download DSSP files.
-        clt.puts(clt.colored.cyan('\nDSSP'))
+        print (clt.colored.cyan('\nDSSP'))
         logger.info('Start downloading DSSP files.')
         print 'Start downloading DSSP files'
         dssp.dssp_download(pdb_files, out_subdirs['ppi_results'],
                            config.get_num_dssp_dl_threads(conf_path))
 
         # Calculate PPIs for all PDB files in the mod_pdb subdir.
-        clt.puts(clt.colored.cyan('\nPPI'))
+        print (clt.colored.cyan('\nPPI'))
         logger.info('Start PPI calculations (without ligands).')
         print 'Start PPI calculations (without ligands)'
         for index in clt.progress.bar(pdb_ids):
@@ -201,7 +230,7 @@ def main():
         os.chdir(cwd)
 
         # Detect motifs.
-        clt.puts(clt.colored.cyan('\nMotifs'))
+        print (clt.colored.cyan('\nMotifs'))
         logger.info('Start motif detection.')
         print 'Start motif detection'
         for fm_file in clt.progress.bar(os.listdir(out_subdirs['ppi_results'])):
@@ -214,7 +243,7 @@ def main():
                                             '_{}_fanmod'.format(motif_size))
 
         # Calculate statistics based on the PPI results.
-        clt.puts(clt.colored.cyan('\nStatistics'))
+        print (clt.colored.cyan('\nStatistics'))
 
         num_pdb_files = 0
         edges_ppi = 0
@@ -297,13 +326,18 @@ def main():
                                     edges_ppi,
                                     num_contacts_per_atom)
 
+        print (clt.colored.green('\nClosing the pipeline. {} \n'.format(time.asctime(
+            time.localtime(end_time))), bold=True))
+        logger.info('Closing the pipeline.')
+        sys.exit(0)
+
     # If arguments are given, run those instead.
 
     out_dir = initialize.check_output_path(out_dir)
     # Download PDB files.
     if args.pdb:
         logger.debug('Collecting PDB-IDs.')
-        clt.puts(clt.colored.cyan('\nPDB'))
+        print (clt.colored.cyan('\nPDB'))
 
         input_files = [f for f in os.listdir(in_dir)]
         pdb_ids = []
@@ -325,7 +359,7 @@ def main():
 
     # Convert Models in PDB files to chains.
     if args.models2chains:
-        clt.puts(clt.colored.cyan('\nModels to Chains'))
+        print (clt.colored.cyan('\nModels to Chains'))
 
         input_files = [f for f in os.listdir(in_dir)]
         pdb_ids = []
@@ -346,7 +380,7 @@ def main():
 
     # Add hydrogen atoms to the PDB file.
     if args.hydrogen:
-        clt.puts(clt.colored.cyan('\nHydrogen Atoms'))
+        print (clt.colored.cyan('\nHydrogen Atoms'))
 
         input_files = [f for f in os.listdir(in_dir)]
         pdb_ids = []
@@ -367,7 +401,7 @@ def main():
 
     # Download DSSP files.
     if args.dssp:
-        clt.puts(clt.colored.cyan('\nDSSP'))
+        print (clt.colored.cyan('\nDSSP'))
 
         input_files = [f for f in os.listdir(in_dir)]
         pdb_ids = []
@@ -385,8 +419,8 @@ def main():
         dssp.dssp_download(pdb_ids, out_dir, config.get_num_dssp_dl_threads(initialize.CONF_FILE))
         os.chdir(cwd)
 
-    if args.ppi == 'all':
-        clt.puts(clt.colored.cyan('\nPPI'))
+    if args.ppi == 'standard':
+        print (clt.colored.cyan('\nPPI'))
 
         input_files = [f for f in os.listdir(in_dir)]
         pdb_ids = []
@@ -416,7 +450,7 @@ def main():
         os.chdir(cwd)
 
     elif args.ppi == 'with-ligands':
-        clt.puts(clt.colored.cyan('\nPPI'))
+        print (clt.colored.cyan('\nPPI'))
 
         input_files = [f for f in os.listdir(in_dir)]
         pdb_ids = []
@@ -447,7 +481,7 @@ def main():
 
     # Detect motifs.
     if args.motifs:
-        clt.puts(clt.colored.cyan('\nMotifs'))
+        print (clt.colored.cyan('\nMotifs'))
 
         input_files = [f for f in os.listdir(in_dir)]
 
@@ -463,7 +497,7 @@ def main():
                                             '_{}_fanmod'.format(motif_size))
 
     if args.statistics:
-        clt.puts(clt.colored.cyan('\nStatistics'))
+        print (clt.colored.cyan('\nStatistics'))
 
         input_files = [f for f in os.listdir(in_dir)]
         num_pdb_files = 0
@@ -550,6 +584,11 @@ def main():
         logger.info('Start planarity calculations.')
         raise NotImplementedError
 
+    end_time = time.time()
+    print (clt.colored.green('\nClosing the pipeline. {} \n'.format(time.asctime(
+        time.localtime(end_time))), bold=True))
+    logger.info('Closing the pipeline.')
+    sys.exit(0)
 
 if __name__ == '__main__':
     main()
