@@ -80,6 +80,10 @@ def calculate_motifs(motif_size, in_file, out_file):
         LOGGER.warning('Motif size not between 3-8.')
         return False
 
+    if utilities.is_empty_file(in_file):
+        LOGGER.warning('%s is empty.', in_file)
+        return False
+
     config_file = initialize.CONF_FILE
 
     if platform.system() == 'Windows':
@@ -118,7 +122,6 @@ def calculate_motifs(motif_size, in_file, out_file):
             if retcode:
                 cmd = command
                 raise subprocess.CalledProcessError(retcode, cmd, output=stdout)
-
 
             return True
         except (OSError, subprocess.CalledProcessError) as err:
