@@ -67,7 +67,7 @@ def calculate_ppi(pdb_path):
 
             if stderr != '':
                 LOGGER.debug(stderr)
-                LOGGER_PLCC.error(stderr)
+                LOGGER_PLCC.error('{%s}\n %s', pdb_path, stderr)
 
             retcode = subp.poll()
             if retcode:
@@ -149,7 +149,7 @@ def calculate_ppi_incl_ligands(pdb_path):
             LOGGER.debug(stdout)
             if stderr != '':
                 LOGGER.debug(stderr)
-                LOGGER_PLCC.error(stderr)
+                LOGGER_PLCC.error('{%s}\n %s', pdb_path, stderr)
 
             retcode = subp.poll()
             if retcode:
@@ -190,7 +190,7 @@ def pdb_models_to_chains(pdb_path, out_dir):
             LOGGER.debug(stdout)
             if stderr != '':
                 LOGGER.debug(stderr)
-                LOGGER_PLCC.error(stderr)
+                LOGGER_PLCC.error('{%s}\n%s', pdb_path, stderr)
 
             retcode = subp.poll()
             if retcode:
@@ -211,7 +211,7 @@ def pdb_models_to_chains(pdb_path, out_dir):
             LOGGER.debug(stdout)
             if stderr != '':
                 LOGGER.debug(stderr)
-                LOGGER_PLCC.error(stderr)
+                LOGGER_PLCC.error('{%s}\n %s', pdb_path, stderr)
 
             retcode = subp.poll()
             if retcode:
