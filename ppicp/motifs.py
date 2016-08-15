@@ -112,7 +112,7 @@ def calculate_motifs(motif_size, in_file, out_file):
                 LOGGER.debug(stdout)
             if stderr != '':
                 LOGGER.debug(stderr)
-            LOGGER_MOTIF.error('{%s|%d}\n %s', in_file, motif_size, stderr)
+                LOGGER_MOTIF.error('{%s|%d}\n %s', in_file, motif_size, stderr)
 
             retcode = subp.poll()
             if retcode:

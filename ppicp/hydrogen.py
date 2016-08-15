@@ -50,7 +50,7 @@ def calc_hydrogen(pdb_path, out_dir):
 
                 if stderr != '':
                     LOGGER.debug(stderr)
-                LOGGER_HYD.error('{%s}\n %s', pdb_path, stderr)
+                    LOGGER_HYD.error('{%s}\n %s', pdb_path, stderr)
 
                 retcode = subp.poll()
                 if retcode:
@@ -71,7 +71,7 @@ def calc_hydrogen(pdb_path, out_dir):
 
                 if stderr != '':
                     LOGGER.debug(stderr)
-                LOGGER_HYD.error('{%s}\n %s', pdb_path, stderr)
+                    LOGGER_HYD.error('{%s}\n %s', pdb_path, stderr)
 
                 # Get rid of the overhead.
                 os.remove(out_dir + 'stripped')
