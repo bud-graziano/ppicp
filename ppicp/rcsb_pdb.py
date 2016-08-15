@@ -21,7 +21,7 @@ from ppicp import initialize
 
 PDB_URL_FTP = r'ftp://ftp.wwpdb.org/pub/pdb/data/biounit/coordinates/divided/'
 PDB_URL_FTP_ALT = r'ftp://ftp.wwpdb.org/pub/pdb/data/biounit/PDB/divided/'
-ALT_PDB_URL = r'http://www.rcsb.org/pdb/files/'
+PDB_URL_HTTP = r'http://www.rcsb.org/pdb/files/'
 
 LOGGER = initialize.init_logger(__name__)
 
@@ -39,10 +39,16 @@ class PdbDownloader(threading.Thread):
         while True:
             # Get the work from the queue and expand the tuple
             pdb_id = self.queue.get()
-            success = retrieve_pdb_bio_assembly_file(pdb_id, PDB_URL_FTP)
+            success = retrieve_pdb_bio_assembly_file(pdb_id, PDB_URL_HTTP)
             if not success:     # retry to download the file
-                LOGGER.warning('Re-trying to download file %s.', pdb_id)
-                retrieve_pdb_bio_assembly_file(pdb_id, ALT_PDB_URL)
+                LOGGER.warning('Re-trying to download file %s (FTP).', pdb_id)
+                success = retrieve_pdb_bio_assembly_file(pdb_id, PDB_URL_FTP)
+            if not success:
+                LOGGER.warning('Re-trying to download file %s (FTP alt).', pdb_id)
+                success = retrieve_pdb_bio_assembly_file(pdb_id, PDB_URL_FTP_ALT)
+            if not success:
+                LOGGER.error('Failed to download %s.', pdb_id)
+
             self.queue.task_done()
 
 
