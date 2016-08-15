@@ -41,7 +41,11 @@ class DsspDownloader(threading.Thread):
         while True:
             # Get the work from the queue and expand the tuple
             pdb_id, url, out_dir = self.queue.get()
-            pdb_to_dssp(pdb_id, url, out_dir)
+            try:
+                pdb_to_dssp(pdb_id, url, out_dir)
+            except RuntimeError, err:
+                print '{}\nCould not download DSSP file for {}.'.format(err, pdb_id)
+                LOGGER.error('%s\nCould not download DSSP file for %s', err, pdb_id)
             self.queue.task_done()
 
 
@@ -100,8 +104,8 @@ def pdb_to_dssp(pdb_id, rest_url, out_dir):
                 LOGGER.info("Job %s status is: %s", pdb_id, status)
                 ready = True
             elif status in ['FAILURE', 'REVOKED']:
-                LOGGER.warning(json.loads(req.text)['message'])
-                raise Exception(json.loads(req.text)['message'])
+                LOGGER.error('%s, %s\n' + json.loads(req.text)['message'], pdb_id, status)
+                raise RuntimeError(json.loads(req.text)['message'])
             else:
                 time.sleep(5)
         else:
