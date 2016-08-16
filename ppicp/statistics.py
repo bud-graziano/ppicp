@@ -9,6 +9,7 @@ which can be used for statistics reports.
 """
 
 import os
+import cPickle
 import csv
 import sys
 import re
@@ -170,3 +171,59 @@ def amount_atom_contacts(all_contacts_dict):
             + all_contacts_dict['CCOCAH'] + all_contacts_dict['BCACOH'] \
             + all_contacts_dict['BCOCAH']
     return total
+
+
+def get_chem_props(aagraph_id_file):
+    """
+    Get the different chemical properties of amino acids and count them.
+
+    There are two common systems to categorize chemical properties of amino acids, one is the three
+    class system and the other the five class system. Chemical properties of amino acids are counted
+    for both systems here.
+    Since the input is a ``aagraph_simple.id`` file, the chemical properties for amino acids
+    contributing to protein-protein interactions are counted.
+
+    :param aagraph_id_file: Path to a ``aagraph_simple.id`` file.
+    :return: two dictionaries containing the abundances of chemical properties according to the
+    three class system and five class system, respectively.
+    """
+    with open(aagraph_id_file, 'r') as f:
+        aagraph = f.readlines()
+
+    # Get a dictionary storing all 20 amino acids and their chemical properties
+    with open(os.path.join(initialize.BIN_DIR, 'chem_props_3.pickle'), 'rb') as in_file:
+        chem_props_3 = cPickle.load(in_file)
+
+    with open(os.path.join(initialize.BIN_DIR, 'chem_props_5.pickle'), 'rb') as in_file:
+        chem_props_5 = cPickle.load(in_file)
+
+    chem_props_count_5 = {'SMALL_APOLAR': 0,
+                          'HYDROPHOBIC': 0,
+                          'POLAR': 0,
+                          'NEGATIVE_CHARGE': 0,
+                          'POSITIVE_CHARGE': 0,
+                          'UNKNOWN': 0
+                         }
+
+    chem_props_count_3 = {'POLAR_UNCHARGED': 0,
+                          'POLAR_CHARGED': 0,
+                          'HYDROPHOBIC': 0,
+                          'UNKNOWN': 0
+                         }
+
+    # Count the occurrence of chemical properties
+    for line in aagraph:
+        if not line.startswith('#'):  # '#' indicates comments
+            amino_acid = line.split(',')[3].rstrip('\n')    # file is in csv format
+            if amino_acid in chem_props_3:
+                prop_3 = chem_props_3.get(amino_acid)
+                chem_props_count_3[prop_3] += 1
+            else:
+                chem_props_count_3['UNKNOWN'] += 1
+
+            if amino_acid in chem_props_5:
+                prop_5 = chem_props_5.get(amino_acid)
+                chem_props_count_5[prop_5] += 1
+            else:
+                chem_props_count_5['UNKNOWN'] += 1
+    return chem_props_count_3, chem_props_count_5

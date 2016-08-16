@@ -179,6 +179,48 @@ def bar_chart_pi_effects(all_contacts_dict, out_dir):
     bar_chart.render_to_file(os.path.join(out_dir, 'pi.svg'))
 
 
+def bar_chart_chem_props_3(chem_props_dict, out_dir):
+    """
+    Generate and save a bar chart showing information about the chemical properties of amino acids
+    according to the three class system.
+
+    :param chem_props_dict: Dictionary containing all chemical properties according to the three
+    class system and how often they occur.
+    :param out_dir: Path to the output directory.
+    """
+    bar_chart = pygal.Bar()
+    bar_chart.title = 'Amino Acid Chemical Properties (3 class)'
+
+    bar_chart.add('Polar Uncharged', chem_props_dict['POLAR_UNCHARGED'])
+    bar_chart.add('Polar Charged', chem_props_dict['POLAR_CHARGED'])
+    bar_chart.add('Hydrophobic', chem_props_dict['HYDROPHOBIC'])
+    bar_chart.add('Unknown', chem_props_dict['UNKNOWN'])
+
+    bar_chart.render_to_file(os.path.join(out_dir, 'chem_props_3.svg'))
+
+
+def bar_chart_chem_props_5(chem_props_dict, out_dir):
+    """
+    Generate and save a bar chart showing information about the chemical properties of amino acids
+    according to the five class system.
+
+    :param chem_props_dict: Dictionary containing all chemical properties according to the five
+    class system and how often they occur.
+    :param out_dir: Path to the output directory.
+    """
+    bar_chart = pygal.Bar()
+    bar_chart.title = 'Amino Acid Chemical Properties (5 class)'
+
+    bar_chart.add('Small Apolar', chem_props_dict['SMALL_APOLAR'])
+    bar_chart.add('Hydrophobic', chem_props_dict['HYDROPHOBIC'])
+    bar_chart.add('Polar', chem_props_dict['POLAR'])
+    bar_chart.add('Negative Charge', chem_props_dict['NEGATIVE_CHARGE'])
+    bar_chart.add('Positive Charge', chem_props_dict['POSITIVE_CHARGE'])
+    bar_chart.add('Unknown', chem_props_dict['UNKNOWN'])
+
+    bar_chart.render_to_file(os.path.join(out_dir, 'chem_props_5.svg'))
+
+
 def html_wrapper(out_dir,
                  date_time,
                  processed_files,
@@ -364,6 +406,20 @@ def html_wrapper(out_dir,
             &#216; number of amino acids contributing to PPIs per graph: {}<br>
             types of AAs:<br>
             types of AAs that are part of a contact:</p>
+
+            <div class="container">
+                <figure>
+                    <embed type="image/svg+xml" src="./imgs/chem_props_3.svg" />
+                    <figcaption>Fig 8. - Amino acid chemical properties (3 class).</figcaption>
+                </figure>
+            </div>
+
+            <div class="container">
+                <figure>
+                    <embed type="image/svg+xml" src="./imgs/chem_props_5.svg" />
+                    <figcaption>Fig 9. - Amino acid chemical properties (5 class).</figcaption>
+                </figure>
+            </div>
 
             <p>&#216; number of atom-atom contacts per edge in PPI graph: {}<br></p>
 

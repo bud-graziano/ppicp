@@ -251,6 +251,8 @@ def main():
         all_contacts = collections.Counter()
         all_aas = 0
         atom_contacts = {}
+        aa_chem_props_3 = collections.Counter()
+        aa_chem_props_5 = collections.Counter()
 
         logger.info('Start compiling statistics.')
         print 'Start compiling statistics'
@@ -269,6 +271,11 @@ def main():
             elif files.endswith('aagraph.gml'):
                 all_aas += statistics.count_aas_in_aa_graph(os.path.join(out_subdirs['ppi_results'],
                                                                          files))
+            elif files.endswith('.id'):
+                chem_props_3, chem_props_5 = statistics.get_chem_props(
+                    os.path.join(out_subdirs['ppi_results'], files))
+                aa_chem_props_3 += collections.Counter(chem_props_3)
+                aa_chem_props_5 += collections.Counter(chem_props_5)
             elif files.endswith('.pdb'):
                 num_pdb_files += 1
 
@@ -281,6 +288,8 @@ def main():
         output_results.bar_chart_ligands(all_contacts, out_subdirs['imgs'])
         output_results.bar_chart_pi_effects(all_contacts, out_subdirs['imgs'])
         output_results.bar_chart_pi_effects_verbose(all_contacts, out_subdirs['imgs'])
+        output_results.bar_chart_chem_props_3(aa_chem_props_3, out_subdirs['imgs'])
+        output_results.bar_chart_chem_props_5(aa_chem_props_5, out_subdirs['imgs'])
 
         # Calculate statistics.
         logger.debug('Calculating statistics.')
@@ -506,6 +515,8 @@ def main():
         all_contacts = collections.Counter()
         all_aas = 0
         atom_contacts = {}
+        aa_chem_props_3 = collections.Counter()
+        aa_chem_props_5 = collections.Counter()
 
         logger.info('Start compiling statistics.')
         print 'Start compiling statistics'
@@ -522,6 +533,11 @@ def main():
                                                                                      ppi_files)))
             elif ppi_files.endswith('aagraph.gml'):
                 all_aas += statistics.count_aas_in_aa_graph(os.path.join(in_dir, ppi_files))
+            elif ppi_files.endswith('.id'):
+                chem_props_3, chem_props_5 = statistics.get_chem_props(os.path.join(in_dir,
+                                                                                    ppi_files))
+                aa_chem_props_3 += collections.Counter(chem_props_3)
+                aa_chem_props_5 += collections.Counter(chem_props_5)
             elif ppi_files.endswith('.pdb'):
                 num_pdb_files += 1
 
@@ -537,6 +553,8 @@ def main():
         output_results.bar_chart_ligands(all_contacts, os.path.join(out_dir, 'imgs'))
         output_results.bar_chart_pi_effects(all_contacts, os.path.join(out_dir, 'imgs'))
         output_results.bar_chart_pi_effects_verbose(all_contacts, os.path.join(out_dir, 'imgs'))
+        output_results.bar_chart_chem_props_3(aa_chem_props_3, os.path.join(out_dir, 'imgs'))
+        output_results.bar_chart_chem_props_5(aa_chem_props_5, os.path.join(out_dir, 'imgs'))
 
         # Calculate statistics.
         logger.debug('Calculating statistics.')
