@@ -179,13 +179,15 @@ def bar_chart_pi_effects(all_contacts_dict, out_dir):
     bar_chart.render_to_file(os.path.join(out_dir, 'pi.svg'))
 
 
-def bar_chart_chem_props_3(chem_props_dict, out_dir):
+def bar_chart_chem_props_3(chem_props_dict, out_dir, ppi=True):
     """
     Generate and save a bar chart showing information about the chemical properties of amino acids
     according to the three class system.
 
     :param chem_props_dict: Dictionary containing all chemical properties according to the three
-    class system and how often they occur.
+     class system and how often they occur.
+    :param ppi: Specify whether the input is from all amino acids or amino acids contributing to
+     PPIs. That is a ``aagraph.gml`` or a ``aagraph_simple.id`` file, respectively.
     :param out_dir: Path to the output directory.
     """
     bar_chart = pygal.Bar()
@@ -196,16 +198,21 @@ def bar_chart_chem_props_3(chem_props_dict, out_dir):
     bar_chart.add('Hydrophobic', chem_props_dict['HYDROPHOBIC'])
     bar_chart.add('Unknown', chem_props_dict['UNKNOWN'])
 
-    bar_chart.render_to_file(os.path.join(out_dir, 'chem_props_3.svg'))
+    if ppi:
+        bar_chart.render_to_file(os.path.join(out_dir, 'chem_props_3_ppi.svg'))
+    else:
+        bar_chart.render_to_file(os.path.join(out_dir, 'chem_props_3_all.svg'))
 
 
-def bar_chart_chem_props_5(chem_props_dict, out_dir):
+def bar_chart_chem_props_5(chem_props_dict, out_dir, ppi=True):
     """
     Generate and save a bar chart showing information about the chemical properties of amino acids
     according to the five class system.
 
     :param chem_props_dict: Dictionary containing all chemical properties according to the five
-    class system and how often they occur.
+     class system and how often they occur.
+    :param ppi: Specify whether the input is from all amino acids or amino acids contributing to
+     PPIs. That is a ``aagraph.gml`` or a ``aagraph_simple.id`` file, respectively.
     :param out_dir: Path to the output directory.
     """
     bar_chart = pygal.Bar()
@@ -218,7 +225,10 @@ def bar_chart_chem_props_5(chem_props_dict, out_dir):
     bar_chart.add('Positive Charge', chem_props_dict['POSITIVE_CHARGE'])
     bar_chart.add('Unknown', chem_props_dict['UNKNOWN'])
 
-    bar_chart.render_to_file(os.path.join(out_dir, 'chem_props_5.svg'))
+    if ppi:
+        bar_chart.render_to_file(os.path.join(out_dir, 'chem_props_5_ppi.svg'))
+    else:
+        bar_chart.render_to_file(os.path.join(out_dir, 'chem_props_5_all.svg'))
 
 
 def html_wrapper(out_dir,
@@ -397,33 +407,49 @@ def html_wrapper(out_dir,
 
         <div>
         <h2>Additional Info</h2>
-            <p>&#216; number contacts on residue level (of edges in PPI graph): {}<br>
-            &#216; number of contacts on atom-atom level: {}</p>
-
+        <h3>Contact Statistics</h3>
+            <p>&#216; number of contacts on residue level (of edges in PPI graph): {}<br>
+            &#216; number of contacts on atom-atom level: {}<br>
+            &#216; number of atom-atom contacts per edge in PPI graph: {}</p>
+        <h3>Amino Acid Statistics</h3>
             <p>Number of all amino acids: {}<br>
             Number of amino acids contributing to PPIs: {}<br>
             &#216; number of amino acids per graph: {}<br>
             &#216; number of amino acids contributing to PPIs per graph: {}<br>
-            types of AAs:<br>
-            types of AAs that are part of a contact:</p>
-
+            <br>
+            <h4>Chemical properties of all amino acids:</h4>
             <div class="container">
                 <figure>
-                    <embed type="image/svg+xml" src="./imgs/chem_props_3.svg" />
+                    <embed type="image/svg+xml" src="./imgs/chem_props_3_all.svg" />
                     <figcaption>Fig 8. - Amino acid chemical properties (3 class).</figcaption>
                 </figure>
             </div>
 
             <div class="container">
                 <figure>
-                    <embed type="image/svg+xml" src="./imgs/chem_props_5.svg" />
+                    <embed type="image/svg+xml" src="./imgs/chem_props_5_all.svg" />
                     <figcaption>Fig 9. - Amino acid chemical properties (5 class).</figcaption>
                 </figure>
             </div>
+            <h4>Chemical properties of amino acids that contribute to PPIs:</h4>
 
-            <p>&#216; number of atom-atom contacts per edge in PPI graph: {}<br></p>
+            <div class="container">
+                <figure>
+                    <embed type="image/svg+xml" src="./imgs/chem_props_3_ppi.svg" />
+                    <figcaption>Fig 10. - Amino acid chemical properties (3 class).</figcaption>
+                </figure>
+            </div>
 
-            <p>Top 5 atoms with most contacts:<br>
+            <div class="container">
+                <figure>
+                    <embed type="image/svg+xml" src="./imgs/chem_props_5_ppi.svg" />
+                    <figcaption>Fig 11. - Amino acid chemical properties (5 class).</figcaption>
+                </figure>
+            </div>
+
+
+
+            <h4>Top 5 atoms with most contacts:</h4>
             Shown as: (PDB ID, Chain ID, Atom ID), &#35; contacts
             <ol>
                 <li>{}</li>
@@ -431,13 +457,13 @@ def html_wrapper(out_dir,
                 <li>{}</li>
                 <li>{}</li>
                 <li>{}</li>
-            </ol></p>
+            </ol>
         </div>
     </body>
 </html>""".format(date_time, processed_files, runtime, all_atom_atom_contacts,
-                  all_resdiue_residue_contacts, edges_ppi, edges_atom, all_aas, aas_contributing,
-                  aas_per_graph, aas_contributing_per_graph, atom_per_edge,
-                  top_one, top_two, top_three, top_four, top_five)
+                  all_resdiue_residue_contacts, edges_ppi, edges_atom, atom_per_edge, all_aas,
+                  aas_contributing, aas_per_graph, aas_contributing_per_graph, top_one, top_two,
+                  top_three, top_four, top_five)
 
     with open(os.path.join(out_dir, 'results.html'), 'w') as f:
         f.write(html_framework)

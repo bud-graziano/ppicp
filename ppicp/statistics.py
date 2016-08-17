@@ -180,12 +180,13 @@ def get_chem_props(aagraph_id_file):
     There are two common systems to categorize chemical properties of amino acids, one is the three
     class system and the other the five class system. Chemical properties of amino acids are counted
     for both systems here.
-    Since the input is a ``aagraph_simple.id`` file, the chemical properties for amino acids
-    contributing to protein-protein interactions are counted.
+    The input can be a ``aagraph_simple.id`` file, then the chemical properties for amino acids
+    contributing to protein-protein interactions are counted., or it can be a ``aagraph.gml`` file,
+    the the chemical properties for all amino acids are counted.
 
-    :param aagraph_id_file: Path to a ``aagraph_simple.id`` file.
+    :param aagraph_id_file: Path to a ``aagraph_simple.id`` or ``aagraph.gml`` file.
     :return: two dictionaries containing the abundances of chemical properties according to the
-    three class system and five class system, respectively.
+     three class system and five class system, respectively.
     """
     with open(aagraph_id_file, 'r') as f:
         aagraph = f.readlines()
@@ -211,19 +212,38 @@ def get_chem_props(aagraph_id_file):
                           'UNKNOWN': 0
                          }
 
-    # Count the occurrence of chemical properties
-    for line in aagraph:
-        if not line.startswith('#'):  # '#' indicates comments
-            amino_acid = line.split(',')[3].rstrip('\n')    # file is in csv format
-            if amino_acid in chem_props_3:
-                prop_3 = chem_props_3.get(amino_acid)
-                chem_props_count_3[prop_3] += 1
-            else:
-                chem_props_count_3['UNKNOWN'] += 1
+    if aagraph_id_file.endswith('_aagraph_simple.id'):  # used to process amino acids in PPIs
+        # Count the occurrence of chemical properties
+        for line in aagraph:
+            if not line.startswith('#'):  # '#' indicates comments
+                amino_acid = line.split(',')[3].rstrip('\n')    # file is in csv format
+                if amino_acid in chem_props_3:
+                    prop_3 = chem_props_3.get(amino_acid)
+                    chem_props_count_3[prop_3] += 1
+                else:
+                    chem_props_count_3['UNKNOWN'] += 1
 
-            if amino_acid in chem_props_5:
-                prop_5 = chem_props_5.get(amino_acid)
-                chem_props_count_5[prop_5] += 1
-            else:
-                chem_props_count_5['UNKNOWN'] += 1
-    return chem_props_count_3, chem_props_count_5
+                if amino_acid in chem_props_5:
+                    prop_5 = chem_props_5.get(amino_acid)
+                    chem_props_count_5[prop_5] += 1
+                else:
+                    chem_props_count_5['UNKNOWN'] += 1
+        return chem_props_count_3, chem_props_count_5
+
+    elif aagraph_id_file.endswith('_aagraph.gml'):  # used to process all amino acids
+        # Count the occurence of chemical properties
+        for line in aagraph:
+            if line.startswith('    residue'):  # indention is important
+                amino_acid = line.split('residue')[1].strip(' "\n')
+                if amino_acid in chem_props_3:
+                    prop_3 = chem_props_3.get(amino_acid)
+                    chem_props_count_3[prop_3] += 1
+                else:
+                    chem_props_count_3['UNKNOWN'] += 1
+
+                if amino_acid in chem_props_5:
+                    prop_5 = chem_props_5.get(amino_acid)
+                    chem_props_count_5[prop_5] += 1
+                else:
+                    chem_props_count_5['UNKNOWN'] += 1
+        return chem_props_count_3, chem_props_count_5
