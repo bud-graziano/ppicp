@@ -46,6 +46,10 @@ class DsspDownloader(threading.Thread):
             except RuntimeError, err:
                 print '{}\nCould not download DSSP file for {}.'.format(err, pdb_id)
                 LOGGER.error('%s\nCould not download DSSP file for %s', err, pdb_id)
+            except ValueError, err:
+                print'{}\nCould not read response JSON object. Download may have failed for {}.'\
+                    .format(err, pdb_id)
+                LOGGER.error('%s\nCould not read response JSON object for %s', err, pdb_id)
             self.queue.task_done()
 
 
