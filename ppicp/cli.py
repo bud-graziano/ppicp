@@ -489,7 +489,7 @@ def main():
 
         logger.info('Start PPI calculations (with ligands).')
         print 'Start PPI calculations (with ligands)'
-        for index in pdb_ids:
+        for index in clt.progress.bar(pdb_ids):
             plcc.calculate_ppi_incl_ligands(index)
         for files in os.listdir(in_dir):
             if files.endswith(('.gml', '.stats', '.fanmod', '.id', '.csv', '.py')) \
