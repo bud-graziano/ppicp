@@ -495,7 +495,12 @@ def main():
             if files.endswith(('.gml', '.stats', '.fanmod', '.id', '.csv', '.py')) \
                     and in_dir != out_dir:
                 shutil.move(files, out_dir)
+        # (out_dir, out_dir) as input here looks strange but it's correct since the files we need
+        # to combine are in the output directory already and the file that stores the combined ones
+        # should also be in the output directory.
+        motifs.combine_fanmod_files(out_dir, out_dir)
         os.chdir(cwd)
+
     elif args.ppi == 'no-pi-effects':
         logger.info('Start PPI calculations (no pi-effects).')
         raise NotImplementedError
